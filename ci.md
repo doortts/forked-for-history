@@ -3,7 +3,7 @@
 
 Yobi 프로젝트는 Jenkins를 이용해서 Continuous Intergration을 수행하고 있다.
 
-Jenkins 서버 URL: http://10.101.43.162:9000/jenkins/
+Jenkins 서버 URL: http://ci.yobi.navercorp.com/jenkins/
 
 Job
 ---
