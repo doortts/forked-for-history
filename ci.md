@@ -71,3 +71,10 @@ ncloud 가상서버를 사용하고 있다.
 * Apache가 80번 포트로 들어오는 모든 요청을 9000번 포트로 포워딩하는 프락시
   역할을 하고 있으며, URL의 path가 /인 요청을 /jenkins/로 리다이렉트하는 일도
   하고 있다.
+
+### 각종 경로
+
+* Apache: /home1/irteam/apps/apache
+* Tomcat: /home1/irteam/apps/tomcat
+* Jenkins: /home1/irteam/deploy/jenkins
+* Apache/Tomcat 로그: /home1/irteam/logs
