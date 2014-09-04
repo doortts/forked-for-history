@@ -25,9 +25,16 @@ yobi.navercorp.com/dlab/hive의 next 브랜치에 새로운 커밋이 들어오�
 
 ### PJT-C-Yobi-all
 
-yobi.navercorp.com/dlab/hive에서 master, next, internal을 제외한 어떤 브랜치에
-새로운 커밋이 들어오면 빌드하고 유닛테스트를 실행한 뒤, 실패한 경우 빌드를
-깨뜨린 사람(새로 들어온 커밋(들)의 저자)에게 메일을 발송한다.
+yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
+어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트를 실행한 뒤, 실패한
+경우 빌드를 깨뜨린 사람(새로 들어온 커밋(들)의 저자)에게 메일을 발송한다.
+
+이 Job에서 제외되는 브랜치는 다음과 같다.
+
+* next
+* internal
+* 브랜치 이름에 "internal"로 시작하는 path segment가 포함된 모든 브랜치 (예:
+  internal, interal123, internal-issue, internal/issue, docs/internal/issue 등)
 
 FIXME: 이상하게 빌드를 깨뜨린 사람에게도 메일이 발송되지 않고 있는 것으로
 보인다. 빌드 로그에서는 메일 수신자 리스트가 비어있어서 메일을 보내지 않는다고
