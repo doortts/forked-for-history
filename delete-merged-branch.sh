@@ -1,17 +1,19 @@
 #!/bin/zsh
 #
-# Delete branches in the remote repository which is merged into master and next
-# branch in your local repository.
+# Delete branches in the origin repository which is merged into both of master
+# and next and/or internal.
 
-remote_repo=http://yobi.navercorp.com/dlab/hive
-
-for commit branch in `git ls-remote $remote_repo | grep -E '[a-fA-F0-9]+\s+refs/heads/'`
-do
-    echo $branch | cut -c 12- | read branch
-    if echo master maint next pu internal | grep -qw $branch; then
-        continue
-    fi
-    if [ `git branch master next --contains=$commit | wc -l` -eq 2 ]; then
-        git push $remote_repo :$branch
-    fi
-done
+git fetch origin
+git remote prune origin
+base=`git merge-base origin/master origin/next`
+branches=`git branch -r --merged $base | grep '^\s*origin/' | sed 's/^\s*origin\///' | grep -Ev '^(master|maint|next|pu|internal)$' | tr '\n' ' '`
+branches="$branches `git branch -r --merged origin/internal | grep '^\s*origin/' | sed 's/^\s*origin\///' | grep -Ev '^(master|maint|next|pu|internal)$' | tr '\n' ' '`"
+if [ -n "$branches" ]
+then
+    echo Branches to be deleted:
+    echo $branches | sed 's/ /\n/g' | sed 's/^/  /'
+    # prevent unnecessary expansion
+    eval "git push origin --delete $branches"
+else
+    echo No branch to be deleted
+fi
