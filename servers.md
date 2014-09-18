@@ -1,0 +1,35 @@
+### yobi.navercorp.com 
+
+용도: Naver Labs를 위한 Yobi 인스턴스
+호스트이름: cyobi01.lab
+
+### ci.yobi.navercorp.com 
+
+용도: CI 테스트
+호스트이름: dev-yobi-ci.ncl
+담당자: 이응준
+
+자세한 것은 ./ci.md 를 참고하라.
+
+### dev.yobi.navercorp.com
+
+용도: 테스트
+호스트이름: test-n4.ncl
+
+### yobi.d2fest.kr
+
+용도: d2fest에 사용되는 yobi 인스턴스
+호스트이름: xvsdec03.lab\*
+
+### demo.yobi.io
+
+용도: demo 사이트를 위한 Yobi 인스턴스
+호스트이름: xvsdec04.lab\*
+
+### yobi.io
+
+용도: yobi official site
+호스트이름: xvsdec03.lab\*, xvsdec04.lab\*
+
+\*: 이것은 d2fest를 위해 지급된 장비이다.
+
