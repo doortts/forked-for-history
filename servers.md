@@ -11,10 +11,29 @@
 
 자세한 것은 ./ci.md 를 참고하라.
 
-### dev.yobi.navercorp.com
+### master.yobi.navercorp.com
 
-용도: 테스트
+용도: master 브랜치 테스트
 호스트이름: test-n4.ncl
+담당자: 이응준
+
+자세한 것은 ./test.md 를 참고하라.
+
+### next.yobi.navercorp.com
+
+용도: next 브랜치 테스트
+호스트이름: test-n4.ncl
+담당자: 이응준
+
+자세한 것은 ./test.md 를 참고하라.
+
+### pu.yobi.navercorp.com
+
+용도: pu 브랜치 테스트
+호스트이름: test-n4.ncl
+담당자: 이응준
+
+자세한 것은 ./test.md 를 참고하라.
 
 ### yobi.d2fest.kr
 
