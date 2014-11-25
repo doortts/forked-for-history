@@ -18,6 +18,7 @@
 
 ### yobi.d2fest.kr
 
+Alias: repo.yobi.io (Yobi 최신 버전 확인용 서버로 활용하려고 하는데 d2fest인건 좀 이상해서)
 용도: d2fest에 사용되는 yobi 인스턴스
 호스트이름: xvsdec03.lab\*
 
