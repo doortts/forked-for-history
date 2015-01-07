@@ -84,4 +84,5 @@ ncloud 가상서버를 사용하고 있다.
 * Apache: /home1/irteam/apps/apache
 * Tomcat: /home1/irteam/apps/tomcat
 * Jenkins: /home1/irteam/deploy/jenkins
+    * Job이 수행되는 workspace: /home1/irteam/.jenkins/workspace
 * Apache/Tomcat 로그: /home1/irteam/logs
