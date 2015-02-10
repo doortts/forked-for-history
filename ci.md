@@ -20,14 +20,15 @@ yobi.navercorp.com/dlab/hive의 master 브랜치에 새로운 커밋이 들어�
 ### PJT-C-Yobi-next
 
 yobi.navercorp.com/dlab/hive의 next 브랜치에 새로운 커밋이 들어오면 빌드하고
-유닛테스트를 실행한 뒤, 실패한 경우 nforge@navercorp.com에 알림 메일을
-발송한다.
+유닛테스트와 findbugs를 실행한 뒤, 빌드 상태가 unstable 혹은 failed 인 경우
+nforge@navercorp.com에 알림 메일을 발송한다.
 
 ### PJT-C-Yobi-all
 
 yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
-어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트를 실행한 뒤, 실패한
-경우 nforge@navercorp.com에 알림 메일을 발송한다.
+어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트와 findbugs를 실행한
+뒤, 빌드 상태가 unstable 혹은 failed 인 경우 nforge@navercorp.com에 알림 메일을
+발송한다.
 
 이 Job에서 제외되는 브랜치는 다음과 같다.
 
@@ -87,3 +88,14 @@ ncloud 가상서버를 사용하고 있다.
 * Jenkins: /home1/irteam/deploy/jenkins
     * Job이 수행되는 workspace: /home1/irteam/.jenkins/workspace
 * Apache/Tomcat 로그: /home1/irteam/logs
+
+Notes
+-----
+
+findbugs가 *.scala 파일은 무시하도록 설정했다. 왜냐하면 findbugs가 scala 코드에
+대해 불필요한 warning을 발생시키기 때문이다. [1][2] 이 설정은 Jenkins가 아니라
+Yobi 프로젝트에서 해도 되겠지만, 때때로 유용한 경고를 해 주기도 하기 때문에
+그렇게 하지는 않았다.
+
+[1]: https://github.com/Netflix/archaius/issues/85
+[2]: http://stackoverflow.com/questions/22617713/whats-the-current-state-of-static-analysis-tools-for-scala
