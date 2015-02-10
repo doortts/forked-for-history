@@ -27,7 +27,7 @@ yobi.navercorp.com/dlab/hive의 next 브랜치에 새로운 커밋이 들어오�
 
 yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
 어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트를 실행한 뒤, 실패한
-경우 빌드를 깨뜨린 사람(새로 들어온 커밋(들)의 저자)에게 메일을 발송한다.
+경우 nforge@navercorp.com에 알림 메일을 발송한다.
 
 이 Job에서 제외되는 브랜치는 다음과 같다.
 
@@ -36,8 +36,9 @@ yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜�
 * 브랜치 이름에 "internal"로 시작하는 path segment가 포함된 모든 브랜치 (예:
   internal, interal123, internal-issue, internal/issue, docs/internal/issue 등)
 
-FIXME: 이상하게 빌드를 깨뜨린 사람에게도 메일이 발송되지 않고 있는 것으로
-보인다. 빌드 로그에서는 메일 수신자 리스트가 비어있어서 메일을 보내지 않는다고
+FIXME: 빌드를 깨뜨린 사람에게만 메일이 발송되도록 하려 했지만 메일이 가지 않는
+문제가 있어서 그만두었다. 빌드를 깬 사람(curlpit)에게만 메일을 발송하려고 하면
+빌드 로그에서는 메일 수신자 리스트가 비어있어서 메일을 보내지 않는다고
 기록된다. 새 브랜치가 만들어진 경우나, 브랜치를 리베이스한 경우에는 Jenkins가
 빌드를 깨뜨린 사람을 알아내지 못하는 것 같다.
 
