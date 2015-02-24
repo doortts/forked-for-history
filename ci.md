@@ -37,6 +37,7 @@ yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜�
 
 이 Job에서 제외되는 브랜치는 다음과 같다.
 
+* master
 * next
 * pu
 * internal
