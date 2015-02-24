@@ -58,7 +58,7 @@ Jenkins 업그레이드
 
 1. 최신버전의 Jenkins를 다운받아 /home1/irteam/deploy에 설치한다. (war라면 압축을 푼다)
 2. 심볼릭 링크 /home1/irteam/deploy/jenkins 가 새로 설치한 Jenkins를 가리키도록 고친다.
-3. Jenkins를 재시작한다.
+3. Jenkins를 재시작한다. (url: http://ci.yobi.navercorp.com/jenkins/restart )
 
 서버
 ----
