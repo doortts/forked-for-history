@@ -23,6 +23,11 @@ yobi.navercorp.com/dlab/hive의 next 브랜치에 새로운 커밋이 들어오�
 유닛테스트와 findbugs를 실행한 뒤, 빌드 상태가 unstable 혹은 failed 인 경우
 nforge@navercorp.com에 알림 메일을 발송한다.
 
+### PJT-C-Yobi-pu
+
+yobi.navercorp.com/dlab/hive의 pu 브랜치에 새로운 커밋이 들어오면 빌드하고
+유닛테스트와 findbugs를 실행한다. 알림 메일은 발송하지 않는다.
+
 ### PJT-C-Yobi-all
 
 yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
@@ -33,6 +38,7 @@ yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜�
 이 Job에서 제외되는 브랜치는 다음과 같다.
 
 * next
+* pu
 * internal
 * 브랜치 이름에 "internal"로 시작하는 path segment가 포함된 모든 브랜치 (예:
   internal, interal123, internal-issue, internal/issue, docs/internal/issue 등)
