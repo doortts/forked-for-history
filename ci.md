@@ -5,11 +5,11 @@ Yobi 프로젝트는 Jenkins를 이용해서 Continuous Intergration을 수행�
 
 Jenkins 서버 URL: http://ci.yobi.navercorp.com/jenkins/
 
-Job
----
+Projects
+--------
 
-Jenkins 서버는 다음의 Job을 통해 Continuous Intergration을 수행한다. Job에 대한
-설정 변경은 서버에 접속할 수 있는 누구나 할 수 있다.
+Jenkins 서버는 다음의 Project를 통해 Continuous Intergration을 수행한다.
+Project에 대한 설정 변경은 서버에 접속할 수 있는 누구나 할 수 있다.
 
 ### PJT-C-Yobi-master
 
@@ -35,7 +35,7 @@ yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜�
 뒤, 빌드 상태가 unstable 혹은 failed 인 경우 nforge@navercorp.com에 알림 메일을
 발송한다.
 
-이 Job에서 제외되는 브랜치는 다음과 같다.
+이 Project에서 제외되는 브랜치는 다음과 같다.
 
 * master
 * next
@@ -57,8 +57,8 @@ irteam 계정으로 다음의 쉘 명령으로 tomcat과 apache를 시작하면,
 
     /home1/irteam/scripts/webapps.sh start
 
-주의: sudo로 irteam 권한만 획득해서 실행하면(sudo -u irteam), Jenkins Job 수행
-시 Git을 실행할 권한이 없어 에러가 발생할 수 있다.
+주의: sudo로 irteam 권한만 획득해서 실행하면(sudo -u irteam), Jenkins가
+Project를 빌드할 때 Git을 실행할 권한이 없어 에러가 발생할 수 있다.
 
 재시작하려면 start 대신 restart를, 멈추려면 stop 명령을 사용한다.
 
@@ -93,7 +93,7 @@ ncloud 가상서버를 사용하고 있다.
 * Apache: /home1/irteam/apps/apache
 * Tomcat: /home1/irteam/apps/tomcat
 * Jenkins: /home1/irteam/deploy/jenkins
-    * Job이 수행되는 workspace: /home1/irteam/.jenkins/workspace
+    * Project가 수행되는 workspace: /home1/irteam/.jenkins/workspace
 * Apache/Tomcat 로그: /home1/irteam/logs
 
 Notes
