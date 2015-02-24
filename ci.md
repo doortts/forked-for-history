@@ -28,7 +28,7 @@ nforge@navercorp.com에 알림 메일을 발송한다.
 yobi.navercorp.com/dlab/hive의 pu 브랜치에 새로운 커밋이 들어오면 빌드하고
 유닛테스트와 findbugs를 실행한다. 알림 메일은 발송하지 않는다.
 
-### PJT-C-Yobi-all
+### PJT-C-Yobi-topics
 
 yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
 어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트와 findbugs를 실행한
