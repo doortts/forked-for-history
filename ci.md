@@ -5,11 +5,11 @@ Yobi 프로젝트는 Jenkins를 이용해서 Continuous Intergration을 수행�
 
 Jenkins 서버 URL: http://ci.yobi.navercorp.com/jenkins/
 
-Job
----
+Projects
+--------
 
-Jenkins 서버는 다음의 Job을 통해 Continuous Intergration을 수행한다. Job에 대한
-설정 변경은 서버에 접속할 수 있는 누구나 할 수 있다.
+Jenkins 서버는 다음의 Project를 통해 Continuous Intergration을 수행한다.
+Project에 대한 설정 변경은 서버에 접속할 수 있는 누구나 할 수 있다.
 
 ### PJT-C-Yobi-master
 
@@ -20,24 +20,33 @@ yobi.navercorp.com/dlab/hive의 master 브랜치에 새로운 커밋이 들어�
 ### PJT-C-Yobi-next
 
 yobi.navercorp.com/dlab/hive의 next 브랜치에 새로운 커밋이 들어오면 빌드하고
-유닛테스트를 실행한 뒤, 실패한 경우 nforge@navercorp.com에 알림 메일을
-발송한다.
+유닛테스트와 findbugs를 실행한 뒤, 빌드 상태가 unstable 혹은 failed 인 경우
+nforge@navercorp.com에 알림 메일을 발송한다.
 
-### PJT-C-Yobi-all
+### PJT-C-Yobi-pu
+
+yobi.navercorp.com/dlab/hive의 pu 브랜치에 새로운 커밋이 들어오면 빌드하고
+유닛테스트와 findbugs를 실행한다. 알림 메일은 발송하지 않는다.
+
+### PJT-C-Yobi-topics
 
 yobi.navercorp.com/dlab/hive에서, 다음 문단에서 기술할 특정 브랜치를 제외한
-어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트를 실행한 뒤, 실패한
-경우 빌드를 깨뜨린 사람(새로 들어온 커밋(들)의 저자)에게 메일을 발송한다.
+어떤 브랜치에 새로운 커밋이 들어오면 빌드하고 유닛테스트와 findbugs를 실행한
+뒤, 빌드 상태가 unstable 혹은 failed 인 경우 nforge@navercorp.com에 알림 메일을
+발송한다.
 
-이 Job에서 제외되는 브랜치는 다음과 같다.
+이 Project에서 제외되는 브랜치는 다음과 같다.
 
+* master
 * next
+* pu
 * internal
 * 브랜치 이름에 "internal"로 시작하는 path segment가 포함된 모든 브랜치 (예:
   internal, interal123, internal-issue, internal/issue, docs/internal/issue 등)
 
-FIXME: 이상하게 빌드를 깨뜨린 사람에게도 메일이 발송되지 않고 있는 것으로
-보인다. 빌드 로그에서는 메일 수신자 리스트가 비어있어서 메일을 보내지 않는다고
+FIXME: 빌드를 깨뜨린 사람에게만 메일이 발송되도록 하려 했지만 메일이 가지 않는
+문제가 있어서 그만두었다. 빌드를 깬 사람(curlpit)에게만 메일을 발송하려고 하면
+빌드 로그에서는 메일 수신자 리스트가 비어있어서 메일을 보내지 않는다고
 기록된다. 새 브랜치가 만들어진 경우나, 브랜치를 리베이스한 경우에는 Jenkins가
 빌드를 깨뜨린 사람을 알아내지 못하는 것 같다.
 
@@ -48,8 +57,8 @@ irteam 계정으로 다음의 쉘 명령으로 tomcat과 apache를 시작하면,
 
     /home1/irteam/scripts/webapps.sh start
 
-주의: sudo로 irteam 권한만 획득해서 실행하면(sudo -u irteam), Jenkins Job 수행
-시 Git을 실행할 권한이 없어 에러가 발생할 수 있다.
+주의: sudo로 irteam 권한만 획득해서 실행하면(sudo -u irteam), Jenkins가
+Project를 빌드할 때 Git을 실행할 권한이 없어 에러가 발생할 수 있다.
 
 재시작하려면 start 대신 restart를, 멈추려면 stop 명령을 사용한다.
 
@@ -84,5 +93,16 @@ ncloud 가상서버를 사용하고 있다.
 * Apache: /home1/irteam/apps/apache
 * Tomcat: /home1/irteam/apps/tomcat
 * Jenkins: /home1/irteam/deploy/jenkins
-    * Job이 수행되는 workspace: /home1/irteam/.jenkins/workspace
+    * Project가 수행되는 workspace: /home1/irteam/.jenkins/workspace
 * Apache/Tomcat 로그: /home1/irteam/logs
+
+Notes
+-----
+
+findbugs가 *.scala 파일은 무시하도록 설정했다. 왜냐하면 findbugs가 scala 코드에
+대해 불필요한 warning을 발생시키기 때문이다. [1][2] 이 설정은 Jenkins가 아니라
+Yobi 프로젝트에서 해도 되겠지만, 때때로 유용한 경고를 해 주기도 하기 때문에
+그렇게 하지는 않았다.
+
+[1]: https://github.com/Netflix/archaius/issues/85
+[2]: http://stackoverflow.com/questions/22617713/whats-the-current-state-of-static-analysis-tools-for-scala
