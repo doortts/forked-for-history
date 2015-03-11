@@ -3,6 +3,8 @@
 용도: Naver Labs를 위한 Yobi 인스턴스
 호스트이름: cyobi01.lab
 
+자세한 것은 ./yobi.navercorp.com.md 를 참고하라.
+
 ### ci.yobi.navercorp.com 
 
 용도: CI 테스트
