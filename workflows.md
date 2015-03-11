@@ -45,7 +45,9 @@
    docs/relnotes/0.6.0.txt)
 3. conf/version.conf 파일에 기록되어있는 버전을 릴리즈할 버전으로 고친다.
 4. 릴리즈할 커밋을 v{버전} 형식으로 태깅한다. (예: v0.6.0)
-5. github에 push하여 릴리즈한다.
+5. http://yobi.io/yobi.zip 로 Yobi를 다운로드 받을 수 있도록 설치 패키지를
+   업로드한다.
+6. github에 push하여 릴리즈한다.
 
 ### 주의사항
 
