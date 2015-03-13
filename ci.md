@@ -50,6 +50,15 @@ FIXME: 빌드를 깨뜨린 사람에게만 메일이 발송되도록 하려 했�
 기록된다. 새 브랜치가 만들어진 경우나, 브랜치를 리베이스한 경우에는 Jenkins가
 빌드를 깨뜨린 사람을 알아내지 못하는 것 같다.
 
+### PJT-C-Yobi-topics2
+
+PJT-C-Yobi-topics2와 비슷하지만, 여기서는 빌드 현황을 브랜치별로 볼 수 있다.
+
+브랜치별로 빌드를 모두 저장하고 있기 때문에 디스크 공간을 많이(브랜치 갯수
+x Yobi 설치 공간) 차지한다. Disk full로 인해 Jenkins가 동작하지 않게 되는
+문제를 막기 위해 최대 빌드 갯수를 100개로 제한해두었다. 100개를 넘게 되면
+오래된 빌드는 삭제될 것이다.
+
 Jenkins 시작방법
 ----------------
 
@@ -99,6 +108,8 @@ ncloud 가상서버를 사용하고 있다.
 Notes
 -----
 
+### findbugs
+
 findbugs가 *.scala 파일은 무시하도록 설정했다. 왜냐하면 findbugs가 scala 코드에
 대해 불필요한 warning을 발생시키기 때문이다. [1][2] 이 설정은 Jenkins가 아니라
 Yobi 프로젝트에서 해도 되겠지만, 때때로 유용한 경고를 해 주기도 하기 때문에
@@ -106,3 +117,28 @@ Yobi 프로젝트에서 해도 되겠지만, 때때로 유용한 경고를 해 �
 
 [1]: https://github.com/Netflix/archaius/issues/85
 [2]: http://stackoverflow.com/questions/22617713/whats-the-current-state-of-static-analysis-tools-for-scala
+
+### Jenkins Multi-branch-project plugin
+
+#### '/'가 포함된 브랜치의 빌드 상세 결과 페이지를 볼 수 없는 문제
+
+Jenkins Multi-branch-project 플러그인을 설치했는데, 이름에 '/'가 포함된
+브랜치의 빌드 결과를 보여주는 페이지에 접근할 수 없다는 문제가 있다. [1] 이 문제를
+해결하기 위해 다음과 같이 Apache와 Catalina에 encoded slash를 허용하는 설정을
+추가했다.
+
+Apache 설정:
+
+    AllowEncodedSlashes On
+
+/home1/irteam/scripts/webapps.sh:
+
+    CATALINA_OPTS="$CATALINA_OPTS -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
+
+FIXME: 그러나 이렇게 설정했음에도 불구하고 여전히 404 Not Found 에러가 발생하는
+문제가 있다. 다음과 같이, Apache를 통하지 않고 9000번 포트를 통해 직접 Tomcat에
+접근해야만 정상적으로 페이지가 보인다.
+
+    http://ci.yobi.navercorp.com:9000/jenkins/job/yobi-topics/branch/build%2Finstall-from-package/
+
+[1]: https://github.com/mjdetullio/multi-branch-project-plugin/issues/11
