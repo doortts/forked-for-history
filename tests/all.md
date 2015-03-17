@@ -1,4 +1,6 @@
-게시판 (예:http://yobi.navercorp.com/dlab/hive/posts)
+# 게시판
+
+예:http://yobi.navercorp.com/dlab/hive/posts
 
 ## 게시글
 
@@ -14,7 +16,9 @@
 [ ] 댓글 생성시 노티 목록에서 확인
 [ ] 댓글 삭제
 
-코드 메뉴 (예: http://yobi.navercorp.com/dlab/hive/code/next)
+# 코드
+
+예: http://yobi.navercorp.com/dlab/hive/code/next
 
 ## 코드 브라우저 (Files)
 
@@ -33,27 +37,7 @@
 
 [ ] 코드 리뷰 기능: codereview.md
 
-## 코드 리뷰
-
-[ ] 코드 리뷰 달기 (SVN은 라인 댓글만 가능함)
-[ ] 코드 밖에 리뷰 달기
-[ ] 리뷰 스레드 닫기/다시 열기 (Git 코드인 경우만, SVN은 확인 필요)
-[ ] 알림 메일
-
-## 에디터
-
-두 종류 모두 확인하기
-* 커밋/코드보내기 에디터
-* 이슈/게시판/마일스톤/이슈댓글/게시판댓글 에디터
-
-[ ] 마크다운 미리보기
-[ ] 첨부 파일 Drag & Drop으로 파일 첨부
-[ ] 클립보드로 이미지 붙혀넣기 (크롬에서만)
-[ ] 유저 맨션
-[ ] 이슈 멘션
-[ ] URL을 링크로 랜더링
-[ ] 커밋 멘션 (Git 프로젝트만)
-[ ] 도움말 보기
+# 코드 저장소
 
 ## GIT
 
@@ -61,6 +45,13 @@
 [ ] git push (receive-pack)
 [ ] git push에 대한 알림 메일
 [ ] git fetch
+
+## SVN
+
+[ ] svn checkout
+[ ] svn commit
+[ ] svn commit에 대한 알림 메일
+[ ] svn update
 
 ## 그룹
 
@@ -71,7 +62,9 @@
 [ ] 그룹 멤버 삭제
 [ ] 그룹 삭제
 
-이슈 (예:http://yobi.navercorp.com/dlab/hive/issues)
+# 이슈
+
+예: http://yobi.navercorp.com/dlab/hive/issues
 
 ## 이슈
 
@@ -110,7 +103,7 @@
 [ ] 마일스톤 필터링
 [ ] 라벨 검색 (or 조건)
 
-## 마일스톤
+# 마일스톤
 
 [ ] 생성
 [ ] 상태변경 닫기/열기
@@ -118,7 +111,7 @@
 [ ] 수정
 [ ] 삭제
 
-## 내 이슈
+# 내 이슈
 
 [ ] 나에게 할당된 이슈
 [ ] 내가 작성한 이슈
@@ -126,7 +119,7 @@
 [ ] 열림/닫힘 탭
 [ ] 이슈 키워드 검색
 
-## 프로젝트
+# 프로젝트
 
 [ ] 생성 (그룹과 계정에 모두 생성해보기)
 [ ] 이름 변경
@@ -138,9 +131,9 @@
 [ ] 공개 설정 변경 (공개, 그룹공개, 비공개 모두 확인)
 [ ] 삭제
 
-## 코드 주고받기
+# 코드 주고받기
 
-메뉴 (예: http://yobi.navercorp.com/dlab/hive/pullRequests)
+예: http://yobi.navercorp.com/dlab/hive/pullRequests
 
 [ ] 코드 주고받기 목록 (Open/Closed 탭)
 [ ] 코드 주고받기 목록 검색 (키워드, 보낸사람)
@@ -152,9 +145,9 @@
 [ ] 리뷰 완료
 [ ] 코드 리뷰 기능: codereview.md
 
-## 리뷰
+# 리뷰
 
-메뉴 (예: http://yobi.navercorp.com/dlab/hive/reviews)
+예: http://yobi.navercorp.com/dlab/hive/reviews
 
 [ ] 코드 리뷰 목록 (Open/Closed 탭)
 [ ] 리뷰 클릭해서 해당 리뷰로
@@ -162,14 +155,7 @@
 [ ] 내가 참여한 리뷰
 [ ] 내가 작성한 리뷰
 
-## SVN
-
-[ ] svn checkout
-[ ] svn commit
-[ ] svn commit에 대한 알림 메일
-[ ] svn update
-
-## 회원
+# 회원
 
 [ ] 회원 가입
 [ ] 회원 가입시 아이디 중복체크
@@ -179,3 +165,27 @@
 [ ] 로그인
 [ ] 로그아웃
 [ ] 회원 정보 수정 (이름, 이메일, 비밀번호)
+
+# 공통 기능
+
+## 코드 리뷰
+
+[ ] 코드 리뷰 달기 (SVN은 라인 댓글만 가능함)
+[ ] 코드 밖에 리뷰 달기
+[ ] 리뷰 스레드 닫기/다시 열기 (Git 코드인 경우만, SVN은 확인 필요)
+[ ] 알림 메일
+
+## 에디터
+
+두 종류 모두 확인하기
+* 커밋/코드보내기 에디터
+* 이슈/게시판/마일스톤/이슈댓글/게시판댓글 에디터
+
+[ ] 마크다운 미리보기
+[ ] 첨부 파일 Drag & Drop으로 파일 첨부
+[ ] 클립보드로 이미지 붙혀넣기 (크롬에서만)
+[ ] 유저 맨션
+[ ] 이슈 멘션
+[ ] URL을 링크로 랜더링
+[ ] 커밋 멘션 (Git 프로젝트만)
+[ ] 도움말 보기
