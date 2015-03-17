@@ -107,7 +107,7 @@
 
 # 코드 저장소
 
-## GIT
+## Git
 
 [ ] git clone (upload-pack)
 [ ] git push (receive-pack)
