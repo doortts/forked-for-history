@@ -378,6 +378,7 @@ notification.pullrequest.current.commits = Current Pull Request Commits
 notification.pullrequest.merged = Pull Request merged
 notification.pullrequest.reopened = Pull Request has been reopened
 notification.pullrequest.reviewed = {0} completed a review on pull request.
+notification.pullrequest.review.requested = {0} requested pull-request review
 notification.pullrequest.review.start = {0} start review
 notification.pullrequest.unreviewed = {0} withdraw a review on pull request.
 notification.pushed.branches = Branches

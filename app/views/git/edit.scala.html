@@ -89,17 +89,36 @@
                 }
 
                 <div>
+                    <div class="pull-requst-title-input">
                     <input type="text" id="title" name="title" maxlength="255" class="text"
                            value="@pullRequest.title" placeholder="@Messages("title")" data-is-user-has-typed="true">
-                    <div style="position: relative;">
-                        @common.editor("body", pullRequest.body, "data-is-user-has-typed=true", "content-body")
                     </div>
-                    @common.fileUploader(ResourceType.PULL_REQUEST, pullRequest.id)
-                    @common.markdown(project)
-
-                    <div class="actions">
-                        <button type="submit" class="ybtn ybtn-success">@Messages("button.save")</button>
-                        <a href="javascript:history.back();" class="ybtn">@Messages("button.cancel")</a>
+                    <div class="pull-request-editor-area">
+                        <div>
+                        @common.editor("body", pullRequest.body, "data-is-user-has-typed=true", "content-body")
+                        </div>
+                        @common.fileUploader(ResourceType.PULL_REQUEST, pullRequest.id)
+                        @common.markdown(project)
+                        <div class="actions">
+                            <button type="submit" class="ybtn ybtn-success">@Messages("button.save")</button>
+                            <a href="javascript:history.back();" class="ybtn">@Messages("button.cancel")</a>
+                        </div>
+                    </div>
+                    <div class="pull-request-reviewer">
+                        <div class="title">@Messages("pullRequest.reviewer")</div>
+                        <div>
+                            <select id="Id" name="reviewerIds[]"
+                            data-toggle="select2" multiple data-placeholder="@Messages("pullRequest.reviewer.none")"  data-format="user" data-container-css-class="fullsize">
+                            @for(projectUser <- pullRequest.toProject.members()) {
+                                <option value="@projectUser.user.loginId"
+                                data-avatar-url="@projectUser.user.avatarUrl"
+                                data-login-id="@projectUser.user.loginId"
+                                @if(pullRequest.doesOngoingReviewBy(projectUser.user)){ selected }>
+                                @projectUser.user.name
+                                </option>
+                            }
+                            </select>
+                        </div>
                     </div>
                 </div>
 

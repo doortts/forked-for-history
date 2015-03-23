@@ -88,19 +88,37 @@
                 </div>
 
                 <div>
+                    <div class="pull-requst-title-input">
                     <input type="text" id="title" name="title" maxlength="255" class="text" placeholder="@Messages("title")">
-                    <div style="position: relative;">
-                        @common.editor("body", pullRequest.body, "", "content-body")
                     </div>
-                    @common.fileUploader(ResourceType.PULL_REQUEST, null)
-                    @common.markdown(project)
-
-                    <div class="actions">
-                        <button type="submit" class="ybtn ybtn-success">@Messages("pullRequest.send")</button>
-                        <a href="javascript:history.back();" class="ybtn">@Messages("button.cancel")</a>
+                    <div class="pull-request-editor-area">
+                        <div>
+                            @common.editor("body", pullRequest.body, "", "content-body")
+                        </div>
+                        @common.fileUploader(ResourceType.PULL_REQUEST, null)
+                        @common.markdown(project)
+                        <div class="actions">
+                            <button type="submit" class="ybtn ybtn-success">@Messages("pullRequest.send")</button>
+                            <a href="javascript:history.back();" class="ybtn">@Messages("button.cancel")</a>
+                        </div>
+                    </div>
+                    <div class="pull-request-reviewer">
+                        <div class="title">@Messages("pullRequest.reviewer")</div>
+                        <div>
+                            <select id="Id" name="reviewerIds[]"
+                            data-toggle="select2" multiple data-placeholder="@Messages("pullRequest.reviewer.none")"  data-format="user" data-container-css-class="fullsize">
+                                @for(projectUser <- toProject.members()) {
+                                    <option value="@projectUser.user.loginId"
+                                    data-avatar-url="@projectUser.user.avatarUrl"
+                                    data-login-id="@projectUser.user.loginId">
+                                    @projectUser.user.name
+                                    </option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
-
+                <div class="row">
                 <ul class="nav nav-tabs mt20">
                     <li class="active">
                         <a href="#__commits" data-toggle="tab">
@@ -109,6 +127,7 @@
                         </a>
                     </li>
                 </ul>
+                </div>
 
                 <div class="tab-content">
                     <div id="__commits" class="code-browse-wrap tab-pane active">
