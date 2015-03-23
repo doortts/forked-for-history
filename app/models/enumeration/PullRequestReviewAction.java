@@ -21,9 +21,15 @@
 package models.enumeration;
 
 public enum PullRequestReviewAction {
-    DONE, CANCEL;
+    DONE, CANCEL, ONGOING, NOT_YET;
 
     public PullRequestReviewAction getOppositAction() {
-        return (this == DONE) ? CANCEL : DONE;
+        if(this == ONGOING || this == CANCEL){
+            return NOT_YET;
+        }
+        if(this == DONE){
+            return ONGOING;
+        }
+        return CANCEL;
     }
 }

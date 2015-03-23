@@ -21,11 +21,10 @@
 
 @(pull: PullRequest, event: PullRequestEvent)
 
-@import utils.TemplateHelper._
-@import utils.TemplateHelper.DiffRenderer._
-@import utils.JodaDateUtil._
-@import models.enumeration.State
+@import models.enumeration.{PullRequestReviewAction, State, EventType}
 @import org.apache.commons.lang3.StringUtils
+@import utils.JodaDateUtil._
+@import utils.TemplateHelper._
 
 @avatarByLoginId(loginId: String, loginName: String) = {
     <a href="@routes.UserApp.userInfo(loginId)" class="usf-group" data-toggle="tooltip" data-placement="top" title="@loginId">
@@ -49,25 +48,27 @@
          href="@routes.CodeHistoryApp.show(project.owner, project.name, commitId).url"
          title="@Messages("code.showCommit")">@StringUtils.left(commitId, 7)</a>
 }
+
+@reviewEventMessage(titleMessageKey: String, bodyMessageKey: String, user : User) = {
+    <li class="event" id="comment-@event.id">
+        <span class="state changed">@Messages(titleMessageKey)</span>
+        @Html(Messages(bodyMessageKey,linkToUser(user.loginId, user.name)))
+        <span class="date">
+            <a href="#event-@event.id" title="@getDateString(event.getDate())">@agoOrDateString(event.getDate())</a>
+        </span>
+    </li>
+}
 @defining(User.findByLoginId(event.senderLoginId)) { user =>
     @event.eventType match {
         case EventType.PULL_REQUEST_REVIEW_STATE_CHANGED => {
             @if(event.getNewValue == PullRequestReviewAction.DONE.name) {
-            <li class="event" id="comment-@event.id">
-                <span class="state changed">@Messages("pullRequest.review")</span>
-                @Html(Messages("notification.pullrequest.reviewed",linkToUser(user.loginId, user.name)))
-                <span class="date">
-                    <a href="#event-@event.id" title="@getDateString(event.getDate())">@agoOrDateString(event.getDate())</a>
-                </span>
-            </li>
-            } else {
-            <li class="event" id="comment-@event.id">
-                <span class="state changed">@Messages("pullRequest.unreview")</span>
-                @Html(Messages("notification.pullrequest.unreviewed", linkToUser(user.loginId, user.name)))
-                <span class="date">
-                    <a href="#event-@event.id" title="@getDateString(event.getDate())">@agoOrDateString(event.getDate())</a>
-                </span>
-            </li>
+                @reviewEventMessage("pullRequest.review", "notification.pullrequest.reviewed", user)
+            }
+            @if(event.getNewValue == PullRequestReviewAction.ONGOING.name) {
+                @reviewEventMessage("pullRequest.review.ongoing", "notification.pullrequest.review.start", user)
+            }
+            @if(event.getNewValue == PullRequestReviewAction.CANCEL.name) {
+                @reviewEventMessage("pullRequest.unreview", "notification.pullrequest.unreviewed", user)
             }
         }
         case EventType.PULL_REQUEST_STATE_CHANGED => {

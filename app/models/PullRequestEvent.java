@@ -78,9 +78,8 @@ public class PullRequestEvent extends Model implements TimelineItem {
         PullRequestEvent lastEvent = getLatestEventInDraftTime(event);
         if (needToDeleteEvent(lastEvent, event)) {
             lastEvent.delete();
-        } else {
-            event.save();
         }
+        event.save();
     }
 
     private static PullRequestEvent getLatestEventInDraftTime(PullRequestEvent event) {

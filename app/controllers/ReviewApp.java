@@ -47,6 +47,8 @@ public class ReviewApp extends Controller {
         pullRequest.addOngoingReviewer(UserApp.currentUser());
 
         Call call = routes.PullRequestApp.pullRequest(userName, projectName, pullRequestNumber);
+        addNotification(pullRequest, PullRequestReviewAction.ONGOING);
+
         return redirect(call);
     }
 
