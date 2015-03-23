@@ -443,6 +443,7 @@ span.issue-label {
     &.mini    { width:12px; height:12px; }
     &.smaller { width:20px; height:20px; }
     &.small   { width:24px; height:24px; }
+    &.smallm  { width:30px; height:30px; }
     &.medium  { width:32px; height:32px; }
     &.mlarge  { width:40px; height:40px; }
     &.larger  { width:45px; height:45px; }
@@ -806,6 +807,17 @@ span.issue-label {
         &:hover, &:focus {
             background-color: @yobi-btn-info-hover !important;
         }
+    }
+
+    &.ybtn-green {
+      color: #f1f1f1;
+      background-color : @yobi-green !important;
+      border:1px solid #00B05C;
+
+      &:hover, &:focus {
+        color: white;
+        background-color: #00B05C !important;
+      }
     }
 
     &.ybtn-danger {

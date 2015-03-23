@@ -28,7 +28,6 @@ import controllers.annotation.AnonymousCheck;
 import controllers.annotation.IsAllowed;
 import controllers.annotation.IsCreatable;
 import controllers.annotation.IsOnlyGitAvailable;
-import errors.PullRequestException;
 import models.*;
 import models.enumeration.Operation;
 import models.enumeration.ResourceType;
@@ -47,7 +46,6 @@ import play.libs.F.Promise;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Result;
 import playRepository.GitBranch;
 import playRepository.GitRepository;
 import playRepository.RepositoryService;
@@ -60,9 +58,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @IsOnlyGitAvailable
 @AnonymousCheck
@@ -397,9 +393,14 @@ public class PullRequestApp extends Controller {
         final PullRequestEventMessage message = new PullRequestEventMessage(
                 UserApp.currentUser(), request(), project, pullRequest.toBranch);
 
-        if(project.isUsingReviewerCount && !pullRequest.isReviewed()) {
+        if(project.isUsingReviewerCount && !pullRequest.hasSufficientReviewer()) {
             return Promise.pure((Result) badRequest(
                     ErrorViews.BadRequest.render("pullRequest.not.enough.review.point")));
+        }
+
+        if(pullRequest.doesOngoingReviewBy(UserApp.currentUser())){
+            pullRequest.removeReviewer(UserApp.currentUser());
+            pullRequest.addReviewer(UserApp.currentUser());
         }
 
         Promise<Void> promise = Promise.promise(
@@ -571,6 +572,11 @@ public class PullRequestApp extends Controller {
 
         if (pullRequest == null) {
             return notFound(notfound.render("error.notfound", project, request().path()));
+        }
+
+        // participate in reviewer if a user isn't current pull-request's contributor
+        if(!pullRequest.contributor.loginId.equals(UserApp.currentUser().loginId)){
+            pullRequest.addOngoingReviewer(UserApp.currentUser());
         }
 
         ReviewComment comment = reviewCommentForm.get();

@@ -26,6 +26,22 @@
 @import models.enumeration
 @import scala.collection.JavaConversions._
 
+@reviewerCount = @{
+    if( project.defaultReviewerCount >= pull.reviewers.size + pull.ongoingReviewers.size ){
+        project.defaultReviewerCount
+    } else {
+        pull.reviewers.size + pull.ongoingReviewers.size
+    }
+}
+
+@amIReviewer = @{
+    val me = UserApp.currentUser()
+    if(pull.reviewers.size > 0 && pull.reviewers.contains(me)){
+        Html("<span class='i-am-a-reviewer'>" + Html(getMarkedUserAvatar(me, "smallm")) + "</span>")
+    } else if(pull.ongoingReviewers.size > 0 && pull.ongoingReviewers.contains(me)){
+        Html("<span class='i-am-a-reviewer'>" + Html(getUserAvatar(me, "smallm")) + "</span>")
+    }
+}
 <div class="board-header issue">
     <div class="pull-right mr10 mt10">
         <div class="date" title="@utils.JodaDateUtil.getDateString(pull.created)">
@@ -38,25 +54,47 @@
     </div>
 </div>
 
-<div class="pull-right">
-    @if(project.isUsingReviewerCount && isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT)){
-        <div id="reviewers" style="display:inline-block; margin-right:5px;">
-            <span style="font-size: 13px; vertical-align: middle; margin: 0 10px;">
-                @Html(Messages("pullRequest.review.participants", pull.reviewers.size))
+<div class="pull-right review-div">
+    @if(project.isUsingReviewerCount){
+        <div class="reviewer-area">
+            <span class="margin-right-5">
+                <strong>@Html(Messages("pullRequest.review.participants", reviewerCount))</strong>
             </span>
-            @for(reviewer <- pull.reviewers) {
-                @Html(getUserAvatar(reviewer))
+        @if(pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size) > 0){
+            @for(idx <- 1 to pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size)){
+                <span class="blank-avatar" data-toggle="tooltip" title="@Messages("pullRequest.need.more.reviewer")">?</span>
             }
+        }
+
+        @amIReviewer
+
+        @for(completedReviewer <- pull.reviewers){
+            @if(!completedReviewer.equals(UserApp.currentUser())){
+                @Html(getMarkedUserAvatar(completedReviewer, "smallm"))
+            }
+        }
+        @if(pull.ongoingReviewers.size > 0){
+            @for(reviewer <- pull.ongoingReviewers) {
+                @if(!reviewer.equals(UserApp.currentUser())){
+                    @Html(getUserAvatar(reviewer, "smallm"))
+                }
+            }
+        }
         </div>
 
-        @if(pull.isOpen) {
-            @if(pull.isReviewedBy(UserApp.currentUser())) {
-                <a data-request-method="post" class="ybtn ybtn-default" href="@routes.ReviewApp.unreview(project.owner, project.name, pull.number)">
+        @if(isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT) && pull.isOpen){
+            @if(pull.doesOngoingReviewBy(UserApp.currentUser())) {
+                <a data-request-method="post" class="ybtn margin-bottom-4px review-accept" href="@routes.ReviewApp.review(project.owner, project.name, pull.number)"><i class="yobicon-checkmark"></i>
+                @Messages("pullRequest.review")
+                </a>
+            }
+            @if(pull.doesOngoingReviewBy(UserApp.currentUser()) || pull.isReviewedBy(UserApp.currentUser())){
+                <a data-request-method="post" class="ybtn ybtn-default margin-bottom-4px" href="@routes.ReviewApp.unreview(project.owner, project.name, pull.number)">
                 @Messages("pullRequest.unreview")
                 </a>
             } else {
-                <a data-request-method="post" class="ybtn @if(pull.isReviewed) {ybtn-default} else {ybtn-success}" href="@routes.ReviewApp.review(project.owner, project.name, pull.number)">
-                @Messages("pullRequest.review")
+                <a data-request-method="post" class="ybtn margin-bottom-4px" href="@routes.ReviewApp.reviewStart(project.owner, project.name, pull.number)">
+                @Messages("pullRequest.review.start")
                 </a>
             }
         }
@@ -65,9 +103,9 @@
     @if(isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT)) {
         @if(pull.isAcceptable){
             <a id="btnAccept" href="@routes.PullRequestApp.accept(project.owner, project.name, pull.number)" data-request-method="post"
-               class="ybtn ybtn-success">@Messages("pullRequest.accept")</a>
+               class="ybtn ybtn-success margin-bottom-4px">@Messages("pullRequest.accept")</a>
         } else {
-            <button class="ybtn ybtn-disabled" data-toggle="tooltip" data-placement="top"
+            <button class="ybtn ybtn-disabled margin-bottom-4px" data-toggle="tooltip" data-placement="top"
                title="@pull.getMessageForDisabledAcceptButton">@Messages("pullRequest.accept")</button>
         }
     }
@@ -78,13 +116,22 @@
         <a href="@routes.PullRequestApp.pullRequest(project.owner, project.name, pull.number)">@Messages("pullRequest.menu.overview")</a>
     </li>
     <li @if(menuType.equals("changes")){class="active"}>
-        <a href="@routes.PullRequestApp.pullRequestChanges(project.owner, project.name, pull.number)">
-            @Messages("pullRequest.menu.changes")
-            @defining(pull.countCommentThreadsByState(CommentThread.ThreadState.OPEN)) { countOpenThreads =>
-                @if(countOpenThreads > 0) {
-                    <span class="num-badge">@countOpenThreads</span>
-                }
+            <a href="@routes.PullRequestApp.pullRequestChanges(project.owner, project.name, pull.number)">
+                @Messages("pullRequest.menu.changes")
+        @if(!pull.commentThreads.isEmpty){
+            @defining(pull.countCommentThreadsByState(CommentThread.ThreadState.CLOSED)){ countClosed =>
+            <i class="ml10 yobicon-post2 vmiddle"></i>
+            <div class="upload-progress" style="display: inline-block">
+                <div class="bar orange" style="width: @getPercent(countClosed.toDouble, pull.commentThreads.size.toDouble)%;"></div>
+            </div>
+            <span data-toggle="tooltip" title="@Messages("pullRequest.review.closed") / @Messages("pullRequest.review.total")">
+                <span>@countClosed</span>
+                <span class="gray-txt">/</span>
+                <span class="size total">@pull.commentThreads.size</span>
+            </span>
             }
+        }
         </a>
     </li>
 </ul>
+

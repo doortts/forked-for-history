@@ -1038,6 +1038,7 @@
                     font-weight:bold;
                     vertical-align: middle;
 
+                    &.merge-ready {border: 4px solid @green; color:@green;}
                     &.closed {border: 4px solid @state-closed; color:@state-closed;}
                     &.changed {border: 4px solid @state-changed;color:@state-changed;}
                     &.rejected {border: 4px solid @state-rejected;color:@state-rejected;}
@@ -3459,6 +3460,10 @@ label.issue-item-row {
             font-size:14px;
             font-weight: bold;
 
+            &.closed-pullrequest-list {
+              color: #888;
+            }
+
             &.project {
                 color:#3592b5;
                 margin-right: 10px;
@@ -3497,6 +3502,11 @@ label.issue-item-row {
         .infos-item {
             margin-right:12px;
             float:left;
+
+            &.agoOrDate {
+              min-width: 65px;
+              margin-right: 5px;
+            }
 
             &.infos-link-item {
                 &:hover {
@@ -3569,33 +3579,34 @@ label.issue-item-row {
 
             .upload-progress {
                 display: inline-block;
-                width: 30px;
+                width: 40px;
                 vertical-align: middle;
                 overflow: hidden;
                 margin-top: 3px;
-                .border-radius(5px);
+                .border-radius(1px);
 
                 .bar { height:100%; }
             }
 
-            .infos-icon { color:#777; margin-right:2px; }
-
             &.over {
-                color:@yobi-primary !important;
-                .infos-icon { color:@yobi-primary; }
+                .infos-icon {
+                  color:#0C9CBC;
+                  margin-right: 0px !important;
+                }
             }
         }
     }
 }
 
 .state {
-    margin-right:16px;
+    display: inline-block;
     margin-top:7px;
     font-weight:bold;
     color:#FFF;
     padding:5px 12px;
     .border-radius(15px);
 
+    &.merge-ready { background-color: @green; }
     &.merged { background-color: @state-merged;}
     &.open { background-color: @state-open; }
     &.closed { background-color : @state-closed;}
@@ -6204,3 +6215,81 @@ div.diff-body[data-outdated="true"] tr:hover .icon-comment {
   vertical-align: middle;
 }
 
+.reviewer-list {
+  font-size: 13px;
+  vertical-align: middle;
+  margin: 0 10px;
+}
+
+.blank-avatar {
+  display: inline-block;
+  width: 27px;
+  height: 25px;
+  font-size: 20px;
+  color: #DFDFDF;
+  font-weight: bold;
+  border-radius: 3px;
+  text-align: center;
+  vertical-align: middle;
+  margin-bottom: 2px;
+  padding-top: 1px;
+  border: 2px dotted #DFDFDF;
+  background-color: #FAFAFA;
+  line-height: 23px;
+}
+
+.reviewer-area {
+  display: inline-block;
+  color: #999595;
+  padding-top: 1px;
+  line-height: 24px;
+
+  a {
+    font-size: 20px;
+    margin-right: 3px !important;
+  }
+
+  i {
+      position: absolute;
+      margin-left: -15px;
+      color: @primary;
+      font-size: 18px;
+      margin-top: -7px;
+  }
+
+  .avatar-wrap{
+    margin-right: 0px !important;
+  }
+}
+
+.review-div {
+  .ybtn {
+      vertical-align: baseline !important;
+  }
+}
+
+.marked-avatar {
+    img {
+        border: 1px solid @primary;
+        .box-shadow();
+    }
+}
+
+.review-accept {
+  i {
+    color: @primary;
+    line-height: 0 !important;
+  }
+}
+
+
+.upload-progress {
+    display: inline-block;
+    width: 40px;
+    vertical-align: middle;
+    overflow: hidden;
+    margin-top: 3px;
+    .border-radius(1px);
+
+    .bar { height:100%; }
+}

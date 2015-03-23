@@ -230,16 +230,16 @@ public class PullRequestTest extends ModelTest<PullRequest> {
         // When & Then
         assertThat(pullRequest.getRequiredReviewerCount()).isEqualTo(project.defaultReviewerCount);
         assertThat(pullRequest.getRequiredReviewerCount()).isEqualTo(1);
-        assertThat(pullRequest.isReviewed()).isFalse();
+        assertThat(pullRequest.hasSufficientReviewer()).isFalse();
 
         // When & Then
         pullRequest.addReviewer(getTestUser());
-        assertThat(pullRequest.isReviewed()).isTrue();
+        assertThat(pullRequest.hasSufficientReviewer()).isTrue();
 
         // When & Then
         pullRequest.clearReviewers();
         assertThat(pullRequest.reviewers.size()).isEqualTo(0);
-        assertThat(pullRequest.isReviewed()).isFalse();
+        assertThat(pullRequest.hasSufficientReviewer()).isFalse();
         assertThat(pullRequest.getLackingReviewerCount()).isEqualTo(1);
     }
 
