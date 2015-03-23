@@ -637,6 +637,18 @@ public class NotificationEvent extends Model {
         return notiEvent;
     }
 
+    public static NotificationEvent reviewRequested(@Nonnull User sender, @Nonnull PullRequest pullRequest, @Nonnull Set<User> targetUsers) {
+        NotificationEvent notiEvent = createFrom(sender, pullRequest);
+        notiEvent.title = formatReplyTitle(pullRequest);
+        notiEvent.receivers = targetUsers;
+        notiEvent.eventType = PULLREQUEST_REVIEW_REQUESTED;
+        notiEvent.oldValue = null;
+        notiEvent.newValue = Messages.get("notification.pullrequest.review.requested",
+                sender.name + "(" + sender.loginId + ")");
+        NotificationEvent.add(notiEvent);
+        return notiEvent;
+    }
+
     public static NotificationEvent afterAssigneeChanged(User oldAssignee, Issue issue) {
         NotificationEvent notiEvent = createFromCurrentUser(issue);
 

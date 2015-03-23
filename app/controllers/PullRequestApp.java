@@ -268,6 +268,7 @@ public class PullRequestApp extends Controller {
 
         pullRequest.save();
 
+        Set<User> newlyAddedReviewer = addOngoingReviewerByPullRequestForm(pullRequest);
         PushedBranch.removeByPullRequestFrom(pullRequest);
 
         AbstractPostingApp.attachUploadFilesToPost(pullRequest.asResource());
@@ -277,10 +278,50 @@ public class PullRequestApp extends Controller {
         NotificationEvent notiEvent = NotificationEvent.afterNewPullRequest(pullRequest);
         PullRequestEvent.addFromNotificationEvent(notiEvent, pullRequest);
 
+        if(newlyAddedReviewer.size() > 0){
+            NotificationEvent.reviewRequested(UserApp.currentUser(), pullRequest, newlyAddedReviewer);
+        }
+
         PullRequestEventMessage message = new PullRequestEventMessage(UserApp.currentUser(), request(), pullRequest, notiEvent.eventType);
         Akka.system().actorOf(Props.create(PullRequestMergingActor.class)).tell(message, null);
 
         return redirect(pullRequestCall);
+    }
+
+    private static Set<User> addOngoingReviewerByPullRequestForm(PullRequest pullRequest) {
+        Set<User> selectedReviewers = getSelectedReviewersFromForm(pullRequest);
+        Set<User> newlyAddedReviewers = getNewlyAddedReviewers(pullRequest, selectedReviewers);
+
+        selectedReviewers.removeAll(pullRequest.reviewers);
+        pullRequest.ongoingReviewers = selectedReviewers;  //now it is safe to reset ongoing reviewers
+        pullRequest.update();
+
+        return newlyAddedReviewers;
+    }
+
+    private static Set<User> getNewlyAddedReviewers(PullRequest pullRequest, Set<User> selectedReviewers) {
+        Set<User> newlyAddedReviewers = new LinkedHashSet<>();
+        for(User requestedUser: selectedReviewers){
+            if(!pullRequest.doesOngoingReviewBy(requestedUser) && !pullRequest.isReviewedBy(requestedUser)){
+                newlyAddedReviewers.add(requestedUser);
+            }
+        }
+        return newlyAddedReviewers;
+    }
+
+    private static Set<User> getSelectedReviewersFromForm(PullRequest pullRequest) {
+        if (pullRequest.reviewerIds == null){
+            return new LinkedHashSet<>();
+        }
+
+        Set<User> selectedReviewers = new LinkedHashSet<>();
+        for(String selectedReviewerLoginId: pullRequest.reviewerIds){
+            User selectedReviewer = User.findByLoginId(selectedReviewerLoginId);
+            if(!selectedReviewer.isAnonymous()){
+                selectedReviewers.add(selectedReviewer);
+            }
+        }
+        return selectedReviewers;
     }
 
     private static void validateForm(Form<PullRequest> form) {
@@ -511,6 +552,10 @@ public class PullRequestApp extends Controller {
         }
 
         pullRequest.updateWith(updatedPullRequest);
+
+        // reviewer reset & send notification to newlyAddedReviewer
+        Set<User> newlyAddedReviewer = addOngoingReviewerByPullRequestForm(pullRequest);
+        NotificationEvent.reviewRequested(UserApp.currentUser(), pullRequest, newlyAddedReviewer);
 
         AbstractPostingApp.attachUploadFilesToPost(pullRequest.asResource());
 

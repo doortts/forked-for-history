@@ -94,6 +94,10 @@ public class PullRequest extends Model implements ResourceConvertible {
     @Transient
     public Long fromProjectId;
 
+    @Transient
+    //introduced for automatic form binding. So, @Transient!
+    public List<String> reviewerIds;
+
     @ManyToOne
     public Project toProject;
 
@@ -352,6 +356,7 @@ public class PullRequest extends Model implements ResourceConvertible {
         this.fromBranch = newPullRequest.fromBranch;
         this.title = newPullRequest.title;
         this.body = newPullRequest.body;
+        this.reviewerIds = newPullRequest.reviewerIds;
         update();
 
         addNewIssueEvents();
