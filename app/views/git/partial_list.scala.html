@@ -24,6 +24,45 @@
 @import utils.TemplateHelper._
 @import org.apache.commons.lang3.StringUtils
 
+@*
+* display e.g.
+* case1. contains currentUser only             : v
+* case2. contains currentUser + others         : v + james, jane
+* case3. contains others                       : defaultIcon + james, jane
+* case4. over MAX_DIAPLAY_NUMBER = 2, total 5  : defaultIcon + james, jane + 3
+*@
+@displayReviewer(reviewerNames :List[String]) = @{
+    var doesIncludCurrentUser = reviewerNames.remove(UserApp.currentUser().name)
+    var MAX_DISPLAY_NUMBER = 5;
+    if(reviewerNames.size <= MAX_DISPLAY_NUMBER){
+        if(doesIncludCurrentUser && reviewerNames.size > 0){
+            "+ " + StringUtils.join(reviewerNames, ", ")
+        } else {
+            StringUtils.join(reviewerNames, ", ")
+        }
+    } else {
+        var result = ""
+        if(doesIncludCurrentUser){
+            result += "+ "
+        }
+        result += reviewerNames(0) // for adding separator comma
+
+        for(idx <- 1 to MAX_DISPLAY_NUMBER - 1){
+            result += ", " + reviewerNames(idx)
+        }
+        result += "+" + (reviewerNames.size - MAX_DISPLAY_NUMBER)
+        result
+    }
+}
+
+@reviewerCounterTooltip(reviewers :Set[User]) = @{
+    if(reviewers.size == 1){
+        Messages("project.reviewer.count.onlyme")
+    } else {
+        Messages("project.reviewer.count")
+    }
+}
+
 <ul class="post-list-wrap">
 @if(page.getList.size> 0){
     @for(req <- page.getList.iterator) {
@@ -39,7 +78,7 @@
                 </a>
                 <div class="title-wrap">
                     <span class="post-id">@req.number</span>
-                    <a href="@routes.PullRequestApp.pullRequest(req.toProject.owner, req.toProject.name, req.number)" class="title @if(req.isConflict == true) {conflict}">
+                    <a href="@routes.PullRequestApp.pullRequest(req.toProject.owner, req.toProject.name, req.number)" class="title @if(req.isConflict) {conflict} @if(!req.isOpen){closed-pullrequest-list}">
                         @req.title
                     </a>
                 </div>
@@ -51,34 +90,48 @@
                     } else {
                         <span class="infos-item">@Messages("issue.noAuthor")</span>
                     }
-                    <span class="infos-item" title="@JodaDateUtil.getDateString(req.created)">
+                    <span class="infos-item agoOrDate" title="@JodaDateUtil.getDateString(req.created)">
                         @agoOrDateString(req.created)
                     </span>
                     @if(!req.commentThreads.isEmpty){
                         @defining(req.countCommentThreadsByState(CommentThread.ThreadState.CLOSED)){ countClosed =>
 
-                        <div class="infos-item" style="margin-right:20px;">
-                            <i class="infos-icon yobicon-post2 vmiddle"></i>
+                        <div class="infos-item margin-right-10" data-toggle="tooltip" title="@Messages("pullRequest.review.closed") / @Messages("pullRequest.review.total")">
                             <div class="upload-progress">
-                                <div class="bar orange" style="width: @getPercent(countClosed.toDouble, req.commentThreads.size.toDouble)%;"></div>
+                            @if(countClosed == req.commentThreads.size){
+                                <div class="bar green" style="width: 100%;"> </div>
+                            } else {
+                                <div class="bar orange" style="width: @getPercent(countClosed.toDouble, req.commentThreads.size.toDouble)%;"> </div>
+                            }
                             </div>
-                            <a href="@routes.PullRequestApp.pullRequestChanges(req.toProject.owner, req.toProject.name, req.number)"
-                               data-toggle="tooltip" title="@Messages("pullRequest.review.closed") / @Messages("pullRequest.review.total")">
+                            <a href="@routes.PullRequestApp.pullRequestChanges(req.toProject.owner, req.toProject.name, req.number)">
+                            @if(countClosed == req.commentThreads.size){
+                                @countClosed
+                            } else {
                                     <span>@countClosed</span>
                                     <span class="gray-txt">/</span>
                                 <span class="size total">@req.commentThreads.size</span>
+                            }
                             </a>
                         </div>
                         }
                     }
+                    @if(project.isUsingReviewerCount && !req.ongoingReviewers.isEmpty
+                        && req.ongoingReviewers.contains(UserApp.currentUser())){
+                        <div class="infos-item onlyme-icon-justify" data-toggle="tooltip" data-html="true" title="@Messages("pullRequest.review.ongoing.by.me")"><i class="infos-icon yobicon-spam2 vmiddle"></i></div>
+                    }
                     @if(project.isUsingReviewerCount && !req.reviewers.isEmpty){
-                        <div class="infos-item @if(req.reviewers.contains(UserApp.currentUser)){over}" style="margin-top:-1px;">
-                            <i class="infos-icon yobicon-preview vmiddle"></i>
-                            <a href="@routes.PullRequestApp.pullRequest(req.toProject.owner, req.toProject.name, req.number)#reviewers"
-                               data-toggle="tooltip" data-html="true" data-title="@StringUtils.join(req.getReviewerNames, "<br>")">
-                                <span class="vmiddle">@req.reviewers.size</span>
-                            </a>
-                        </div>
+                        @if(req.reviewers.contains(UserApp.currentUser)){
+                            <div class="infos-item" style="margin-top:-1px;" data-toggle="tooltip" data-html="true" data-title="@reviewerCounterTooltip(req.reviewers)">
+                                <i class="infos-icon by-me yobicon-check-circle-alt @if(req.hasSufficientReviewer()){ green-txt} vmiddle"></i>
+                                <span class="vmiddle reviewer">@displayReviewer(req.getReviewerNames) </span>
+                            </div>
+                        } else {
+                            <div class="infos-item" style="margin-top:-1px;" data-toggle="tooltip" data-html="true" data-title="@Messages("project.reviewer.count")">
+                                <i class="infos-icon yobicon-check-circle @if(req.hasSufficientReviewer()){ green-txt } vmiddle"></i>
+                                <span class="vmiddle reviewer">@displayReviewer(req.getReviewerNames)</span>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -92,7 +145,14 @@
                         <div class="empty-avatar-wrap">&nbsp;</div>
                     }
                 </div>
-                <div class="state @if(req.isConflict == true) {conflict} else { @req.state.toString.toLowerCase} pull-right">@if(req.isConflict == true) {@Messages("pullRequest.state.conflict")} else {@Messages("pullRequest.state." + req.state.toString.toLowerCase)}</div>
+                @if(req.isOpen && req.isAcceptable){
+                    <div class="state merge-ready pull-right">@Messages("pullRequest.merge.ready")</div>
+                }
+                @if(req.isOpen && req.isConflict){
+                    <div class="state conflict pull-right">@Messages("pullRequest.state.conflict")</div>
+                }
+                @if(!req.isOpen){
+                    <div class="state @req.state.toString.toLowerCase pull-right">@Messages("pullRequest.state." + req.state.toString.toLowerCase)</div>}
             </div>
         </li>
     }
