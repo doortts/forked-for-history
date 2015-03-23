@@ -3634,21 +3634,6 @@ label.issue-item-row {
     color:@yobi-red;
 }
 
-.pullRequest-branchInfo {
-    code {
-        border:none;
-        background: transparent;
-        color: @yobi-cyan-dark;
-        padding: 0;
-
-        a {
-            color: @yobi-cyan-dark;
-            &.branchName { color:@yobi-cyan; }
-        }
-    }
-
-    i { font-size:12px; margin:0 5px; color: @yobi-cyan-dark; }
-}
 .pullRequest-stateInfo {
     margin-top:15px;
 
@@ -6303,7 +6288,7 @@ div.diff-body[data-outdated="true"] tr:hover .icon-comment {
   margin-right: 5px !important;
 }
 
-.pull-requst-title-input {
+.pull-request-title-input {
   width: 99%;
 }
 
@@ -6330,3 +6315,28 @@ div.diff-body[data-outdated="true"] tr:hover .icon-comment {
   margin-top:-1px;
 }
 
+.pullRequest-branchInfo{
+  font-size: 12px;
+  font-family: @fixed-font-family;
+}
+
+.pull-request-from-outer {
+  padding: 4px 9px;
+  color: white !important;
+  border-radius: 3px;
+  background-color: #b94a48;
+
+  a {
+    color: #fff !important;
+    &:hover {
+      color: #fff !important;
+    }
+  }
+}
+
+.to-default-branch {
+  padding: 4px 9px;
+  color: black;
+  border-radius: 3px;
+  background-color: #76D5FF;
+}
