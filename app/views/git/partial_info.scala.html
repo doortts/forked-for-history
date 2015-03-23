@@ -60,14 +60,7 @@
             <span class="margin-right-5">
                 <strong>@Html(Messages("pullRequest.review.participants", reviewerCount))</strong>
             </span>
-        @if(pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size) > 0){
-            @for(idx <- 1 to pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size)){
-                <span class="blank-avatar" data-toggle="tooltip" title="@Messages("pullRequest.need.more.reviewer")">?</span>
-            }
-        }
-
         @amIReviewer
-
         @for(completedReviewer <- pull.reviewers){
             @if(!completedReviewer.equals(UserApp.currentUser())){
                 @Html(getMarkedUserAvatar(completedReviewer, "smallm"))
@@ -78,6 +71,11 @@
                 @if(!reviewer.equals(UserApp.currentUser())){
                     @Html(getUserAvatar(reviewer, "smallm"))
                 }
+            }
+        }
+        @if(pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size) > 0){
+            @for(idx <- 1 to pull.toProject.defaultReviewerCount - (pull.reviewers.size + pull.ongoingReviewers.size)){
+                <span class="blank-avatar" data-toggle="tooltip" title="@Messages("pullRequest.need.more.reviewer")">?</span>
             }
         }
         </div>
