@@ -44,6 +44,7 @@ import utils.AccessControl;
 import utils.EventConstants;
 import utils.RouteUtil;
 
+import javax.annotation.Nonnull;
 import javax.naming.LimitExceededException;
 import javax.persistence.*;
 import javax.servlet.ServletException;
@@ -170,9 +171,15 @@ public class NotificationEvent extends Model {
             case PULL_REQUEST_REVIEW_STATE_CHANGED:
                 if (PullRequestReviewAction.DONE.name().equals(newValue)) {
                     return Messages.get(lang, "notification.pullrequest.reviewed", User.find.byId(senderId).loginId);
-                } else {
+                }
+
+                if (PullRequestReviewAction.ONGOING.name().equals(newValue)) {
+                    return Messages.get(lang, "notification.pullrequest.review.start", User.find.byId(senderId).loginId);
+                }
+                if (PullRequestReviewAction.CANCEL.name().equals(newValue)) {
                     return Messages.get(lang, "notification.pullrequest.unreviewed", User.find.byId(senderId).loginId);
                 }
+                throw new RuntimeException("Illegal state of review! state: " + newValue);
             case REVIEW_THREAD_STATE_CHANGED:
                 if (newValue.equals(CommentThread.ThreadState.CLOSED.name())) {
                     return Messages.get(lang, "notification.reviewthread.closed");
