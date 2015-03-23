@@ -1052,6 +1052,7 @@ public class PullRequest extends Model implements ResourceConvertible {
     }
 
     public void clearReviewers() {
+        this.ongoingReviewers.addAll(reviewers);
         this.reviewers = new HashSet<>();
         this.update();
     }
