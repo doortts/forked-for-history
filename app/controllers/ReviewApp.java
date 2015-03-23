@@ -39,10 +39,24 @@ public class ReviewApp extends Controller {
 
     @Transactional
     @IsAllowed(value = Operation.ACCEPT, resourceType = ResourceType.PULL_REQUEST)
+    public static Result reviewStart(String userName, String projectName, Long pullRequestNumber) {
+        Project project = Project.findByOwnerAndProjectName(userName, projectName);
+        PullRequest pullRequest = PullRequest.findOne(project, pullRequestNumber);
+
+        pullRequest.removeReviewer(UserApp.currentUser());
+        pullRequest.addOngoingReviewer(UserApp.currentUser());
+
+        Call call = routes.PullRequestApp.pullRequest(userName, projectName, pullRequestNumber);
+        return redirect(call);
+    }
+
+    @Transactional
+    @IsAllowed(value = Operation.ACCEPT, resourceType = ResourceType.PULL_REQUEST)
     public static Result review(String userName, String projectName, Long pullRequestNumber) {
         Project project = Project.findByOwnerAndProjectName(userName, projectName);
         PullRequest pullRequest = PullRequest.findOne(project, pullRequestNumber);
 
+        pullRequest.removeReviewer(UserApp.currentUser());
         pullRequest.addReviewer(UserApp.currentUser());
 
         Call call = routes.PullRequestApp.pullRequest(userName, projectName, pullRequestNumber);

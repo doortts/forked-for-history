@@ -144,6 +144,13 @@ object TemplateHelper {
     "<a href=\"" + userInfoURL + "\" class=\"usf-group\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + user.name + "\"><img src=\"" + user.avatarUrl + "\" class=\"avatar-wrap " + avatarSize + "\"></a>"
   }
 
+  def getDimmedUserAvatar(user: models.User, avatarSize:String = "small") = {
+    user.refresh();
+    var userInfoURL = routes.UserApp.userInfo(user.loginId).toString()
+
+    "<a href=\"" + userInfoURL + "\" class=\"dimmedAvatar usf-group \" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + user.name + "\"><img src=\"" + user.avatarUrl + "\" class=\"avatar-wrap " + avatarSize + "\"></a>"
+  }
+
   def urlToProjectBG(project: Project) = {
     models.Attachment.findByContainer(project.asResource) match {
       case files if files.size > 0 => routes.AttachmentApp.getFile(files.head.id)

@@ -59,7 +59,6 @@ import playRepository.GitRepository;
 import utils.Constants;
 import utils.JodaDateUtil;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.persistence.OrderBy;
@@ -152,6 +151,14 @@ public class PullRequest extends Model implements ResourceConvertible {
     )
     public Set<User> reviewers = new HashSet<>();
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "PULL_REQUEST_ONGOING_REVIEWER",
+            joinColumns = @JoinColumn(name = "PULL_REQUEST_ID"),
+            inverseJoinColumns = @JoinColumn(name = "USER_ID")
+    )
+    public Set<User> ongoingReviewers = new HashSet<>();
+
     @OneToMany(mappedBy = "pullRequest")
     public List<CommentThread> commentThreads = new ArrayList<>();
 
@@ -204,7 +211,14 @@ public class PullRequest extends Model implements ResourceConvertible {
     }
 
     public boolean isAcceptable() {
-        return !isConflict && isOpen() && !isMerging && (isReviewed() || !toProject.isUsingReviewerCount);
+        if(isConflict || isClosed() || isMerging || isMerged()){
+            return false;
+        }
+        if(hasSufficientReviewer() || !toProject.isUsingReviewerCount){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static PullRequest findById(long id) {
@@ -1040,6 +1054,12 @@ public class PullRequest extends Model implements ResourceConvertible {
         return this.toProject.defaultReviewerCount;
     }
 
+    public void addOngoingReviewer(User user){
+        if(this.ongoingReviewers.add(user)) {
+            this.update();
+        }
+    }
+
     public void addReviewer(User user) {
         if(this.reviewers.add(user)) {
             this.update();
@@ -1047,6 +1067,7 @@ public class PullRequest extends Model implements ResourceConvertible {
     }
 
     public void removeReviewer(User user) {
+        this.ongoingReviewers.remove(user);
         this.reviewers.remove(user);
         this.update();
     }
@@ -1055,7 +1076,11 @@ public class PullRequest extends Model implements ResourceConvertible {
         return this.reviewers.contains(user);
     }
 
-    public boolean isReviewed() {
+    public boolean doesOngoingReviewBy(User user) {
+        return this.ongoingReviewers.contains(user);
+    }
+
+    public boolean hasSufficientReviewer() {
         return reviewers.size() >= toProject.defaultReviewerCount;
     }
 

@@ -39,24 +39,44 @@
 </div>
 
 <div class="pull-right">
-    @if(project.isUsingReviewerCount && isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT)){
-        <div id="reviewers" style="display:inline-block; margin-right:5px;">
-            <span style="font-size: 13px; vertical-align: middle; margin: 0 10px;">
-                @Html(Messages("pullRequest.review.participants", pull.reviewers.size))
+    @if(project.isUsingReviewerCount){
+        <div class="completed-reviewer-area">
+            <span class="margin-right-5">
+                <strong>@Messages("pullRequest.review")</strong>
             </span>
-            @for(reviewer <- pull.reviewers) {
-                @Html(getUserAvatar(reviewer))
+        @if(pull.toProject.defaultReviewerCount - pull.reviewers.size > 0){
+            @for(idx <- 1 to pull.toProject.defaultReviewerCount - pull.reviewers.size){
+                <span class="blank-avatar" data-toggle="tooltip" title="@Messages("pullRequest.need.more.reviewer")">?</span>
             }
+        }
+
+        @for(completedReviewer <- pull.reviewers){
+            @Html(getUserAvatar(completedReviewer, "smallm"))
+        }
         </div>
 
-        @if(pull.isOpen) {
-            @if(pull.isReviewedBy(UserApp.currentUser())) {
-                <a data-request-method="post" class="ybtn ybtn-default" href="@routes.ReviewApp.unreview(project.owner, project.name, pull.number)">
+        @if(pull.ongoingReviewers.size > 0){
+        <i class="yobicon-left margin-left-10 ongoing-arrow" data-toggle="tooltip" title="@Messages("pullRequest.review.ongoing")"></i>
+        <div id="reviewers" style="display:inline-block; margin-right:5px;" >
+            @for(reviewer <- pull.ongoingReviewers) {
+                @Html(getDimmedUserAvatar(reviewer, "smallm"))
+            }
+        </div>
+        }
+
+        @if(isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT) && pull.isOpen){
+            @if(pull.doesOngoingReviewBy(UserApp.currentUser())) {
+                <a data-request-method="post" class="ybtn ybtn-green ybtn-small margin-bottom-4px" href="@routes.ReviewApp.review(project.owner, project.name, pull.number)">
+                @Messages("pullRequest.review")
+                </a>
+            }
+            @if(pull.doesOngoingReviewBy(UserApp.currentUser()) || pull.isReviewedBy(UserApp.currentUser())){
+                <a data-request-method="post" class="ybtn ybtn-default ybtn-small margin-bottom-4px" href="@routes.ReviewApp.unreview(project.owner, project.name, pull.number)">
                 @Messages("pullRequest.unreview")
                 </a>
             } else {
-                <a data-request-method="post" class="ybtn @if(pull.isReviewed) {ybtn-default} else {ybtn-success}" href="@routes.ReviewApp.review(project.owner, project.name, pull.number)">
-                @Messages("pullRequest.review")
+                <a data-request-method="post" class="ybtn @if(pull.hasSufficientReviewer) {ybtn-default} else {ybtn-success} ybtn-small margin-bottom-4px" href="@routes.ReviewApp.reviewStart(project.owner, project.name, pull.number)">
+                @Messages("pullRequest.review.start")
                 </a>
             }
         }
@@ -65,9 +85,9 @@
     @if(isAllowed(UserApp.currentUser(), pull.asResource(), Operation.ACCEPT)) {
         @if(pull.isAcceptable){
             <a id="btnAccept" href="@routes.PullRequestApp.accept(project.owner, project.name, pull.number)" data-request-method="post"
-               class="ybtn ybtn-success">@Messages("pullRequest.accept")</a>
+               class="ybtn ybtn-success ybtn-small margin-bottom-4px">@Messages("pullRequest.accept")</a>
         } else {
-            <button class="ybtn ybtn-disabled" data-toggle="tooltip" data-placement="top"
+            <button class="ybtn ybtn-disabled ybtn-small margin-bottom-4px" data-toggle="tooltip" data-placement="top"
                title="@pull.getMessageForDisabledAcceptButton">@Messages("pullRequest.accept")</button>
         }
     }
