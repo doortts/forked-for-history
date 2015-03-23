@@ -45,6 +45,7 @@ public abstract class PullRequestActor extends UntypedActor {
                     PullRequestEvent.addCommitEvents(message.getSender(), pullRequest,
                             mergeResult.getNewCommits(),
                             getCommitEventOldValue(oldMergeCommitId, pullRequest.mergedCommitIdTo));
+                    // TODO: send notification message to review completed reviewers
                     pullRequest.clearReviewers();
                 }
             } else {
