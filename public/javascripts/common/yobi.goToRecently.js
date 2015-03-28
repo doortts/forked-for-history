@@ -73,7 +73,7 @@ $(function(){
 
     function showLoading(target) {
         target.html("<span style='color: #51AACC'>loading... <i class='yobicon-loading'></i></span>");
-        target.animate({width: "400px"});
+        target.animate({width: "450px"});
     }
 
     function format(itemObject){
