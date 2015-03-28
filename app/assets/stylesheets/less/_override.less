@@ -370,6 +370,7 @@ li.select2-result-with-children:first-of-type {
   font-family: @fixed-font-family;
   background-color: #27abe1;
   margin-top: 2px;
+  z-index: 999;
 }
 
 .tooltip.right.in > .tooltip-inner {
@@ -377,6 +378,23 @@ li.select2-result-with-children:first-of-type {
   background-color: #27abe1;
   margin-left: 3px;
   line-height: 1.1;
+  z-index: 999;
 }
 .tooltip.right.in > .tooltip-arrow {border-right-color: #27abe1;}
 
+.select2-results {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.windowsWebkitScrollbar {
+    overflow-y: hidden;
+    &::-webkit-scrollbar {
+        width: 1px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: black;
+    }
+    &:hover {
+        overflow-y: auto;
+    }
+}

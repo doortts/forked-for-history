@@ -198,7 +198,6 @@ $(function(){
 
         if (currentDepth !== 0){  // ignore when search text doesn't exist
             resultMap[currentDepth].push(text);
-            console.log(currentDepth, ": ", text);
         }
         return true;
     }
@@ -218,6 +217,7 @@ $(function(){
         $('#visitedPage').on("select2-highlight, select2-opening", function(){
             $("ul.gnb-nav").hide();
             $("#s2id_visitedPage").show();
+            _patchForWindows();
         });
 
         //resize select2 div to default width
@@ -247,6 +247,14 @@ $(function(){
                 }
             })
         }
+
+        var _patchForWindows = function () {
+            if(navigator.platform.toUpperCase() === "WIN32"){
+                //select2 scrollbar is too thick in windows, so hide tooltip.
+                //To prevent it, additional css is required.
+                $(".select2-results").addClass("windowsWebkitScrollbar");
+            }
+        };
     }
 
     function addEventAtGoToRecentlySelectBox() {
@@ -255,6 +263,7 @@ $(function(){
         });
     }
 
+    // to prevent select2 box irregular style add dummy select box
     function addHideEventAtGoToDummyButton() {
         $("#goto-link-dummy").one("click", function(){
             $(this).hide();
@@ -267,9 +276,12 @@ $(function(){
     }
 
     function isShortcutKeyPressed(event) {
+        var activeElementName = $(document.activeElement).prop("tagName").toUpperCase();
+        if(["INPUT","TEXTAREA"].indexOf(activeElementName) !== -1){ // avoid already somewhere input focused state
+            return false;
+        }
         return (event.which == 107 || event.which == 12623     // keycode => 107: k, 12623: ㅏ
-            || event.which == 106 || event.which == 12627)     // keycode => 106: j, 12627: ㅓ
-            && $(':focus').length == 0;                        // avoid already somewhere focused state
+            || event.which == 106 || event.which == 12627);     // keycode => 106: j, 12627: ㅓ
     }
 });
 
