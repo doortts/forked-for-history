@@ -854,12 +854,15 @@ public class User extends Model implements ResourceConvertible {
             return;
         }
 
-        for(VisitedPage page: pages){
-            if(page.path.equalsIgnoreCase(path)){
-                pages.remove(page);
-                page.delete();
-                return;
+        try{
+            for(VisitedPage page: pages){
+                if(page.path.equalsIgnoreCase(path)){
+                    pages.remove(page);
+                    page.delete();
+                }
             }
+        } catch (OptimisticLockException | ConcurrentModificationException oe){
+            play.Logger.info("Page accessed from cache which already deleted!", oe);
         }
     }
 

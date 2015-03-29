@@ -41,8 +41,6 @@ public class VisitedPage extends Model{
         VisitedPage that = (VisitedPage) o;
 
         if (!path.equalsIgnoreCase(that.path)) return false;
-        if (!title.equalsIgnoreCase(that.title)) return false;
-
         return true;
     }
 
