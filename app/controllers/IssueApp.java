@@ -218,7 +218,7 @@ public class IssueApp extends AbstractPostingApp {
                 result.put("body", Messages.get("error.notfound.issue_post"));
                 return ok(result);
             } else {
-                UserApp.currentUser().removeVisitPageByPath(request().path());
+                UserApp.currentUser().removeVisitPageFromCacheByPath(request().path());
                 return notFound(ErrorViews.NotFound.render("error.notfound", project, ResourceType.ISSUE_POST.resource()));
             }
         }

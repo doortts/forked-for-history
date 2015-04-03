@@ -50,7 +50,7 @@
 @projectLayout(title, project, utils.MenuType.NONE) {
 @projectMenu(project, getMenuType(targetType), "")
 @* remove visited page in case of page deletion *@
-@UserApp.currentUser().removeVisitPageByPath(Http.Context.current().request().path());
+@UserApp.currentUser().removeVisitPageFromCacheByPath(Http.Context.current().request().path());
 <div class="page-wrap-outer">
     <div class="project-page-wrap">
         <div class="error-wrap">

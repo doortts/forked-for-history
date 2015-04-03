@@ -183,7 +183,7 @@ public class User extends Model implements ResourceConvertible {
     public List<OrganizationUser> organizationUsers;
 
     @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<VisitedPage> visitedPages = new ArrayList<>();
+    public List<VisitedPage> userVisitedPages = new ArrayList<>();
 
     public User() {
     }
@@ -794,99 +794,138 @@ public class User extends Model implements ResourceConvertible {
       return result;
     }
 
+    @SuppressWarnings("unchecked")
     public static List<VisitedPage> getRecentlyVisitedPages(User user){
-        List<VisitedPage> vps = (List<VisitedPage>) Cache.get(UserApp.currentUser().loginId);
-        if (vps == null) { // cache is reset or first time using cache
-            if(user.visitedPages.size() > 0){
-                vps = new ArrayList<>(user.visitedPages);
-                Collections.reverse(vps);
+        List<VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(UserApp.currentUser().loginId);
+        if (cachedPages == null) { // cache is reset or first time using cache
+            if(user.userVisitedPages.size() > 0){
+                cachedPages = new ArrayList<>(user.userVisitedPages);
+                Collections.reverse(cachedPages);
             } else {
-                vps = new ArrayList<>();
+                cachedPages = new ArrayList<>();
             }
-            Cache.set(user.loginId, vps);
+            Cache.set(user.loginId, cachedPages);
         }
-        return vps;
+        return cachedPages;
     }
 
-    public void addVisitPage(String path, String title){
-        if(this.isAnonymous()){
-            return;
-        }
-        final VisitedPage currentPage = VisitedPage.getPage(path, title);
-
+    @SuppressWarnings("unchecked")
+    private VisitedPage getCurrentPageFromCache(String path, String title){
         List <VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
 
         if (cachedPages == null) {
-            cachedPages = new ArrayList<>();
+            return null;
         }
 
-        if(cachedPages.contains(currentPage)){
-            cachedPages.remove(currentPage);
-        }
-        cachedPages.add(0, currentPage); //for page ordering
+        for(VisitedPage page: cachedPages){
+            if(page.path.equalsIgnoreCase(path)){   // cache hit
+                VisitedPage currentPage = page;
 
-        if(cachedPages.size() > MAX_VISITED_PAGE_SIZE){
-            cachedPages.remove(MAX_VISITED_PAGE_SIZE -1);
+                cachedPages.remove(currentPage);    // for ordering
+                currentPage.title = title;          // title may be updated
+                cachedPages.add(0, currentPage);    // for ordering
+                return currentPage;
+            }
         }
+
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void addVisitPage(final String path, final String title){
+        if(this.isAnonymous()){
+            return;
+        }
+
+        VisitedPage currentPage = getCurrentPageFromCache(path, title);
+        if(currentPage == null){  // doesn't exist in user cache
+            currentPage = VisitedPage.getPage(path, title);
+            List<VisitedPage> cachedPages = getRecentlyVisitedPages(this);
+            if (cachedPages.contains(currentPage)){
+                cachedPages.remove(currentPage);
+            }
+            cachedPages.add(0, currentPage);
+        }
+
+        deleteOldPageFromCache();
+
+        //add visited page history from persistence(DB) & global map
+        final VisitedPage pageForPersistence = currentPage;
         Promise.promise(
             new Function0<Void>() {
                 public Void apply() throws IllegalAccessException, InstantiationException {
-                    if(visitedPages.contains(currentPage)) {
-                        VisitedPage oldPage = visitedPages.get(visitedPages.indexOf(currentPage));
-                        oldPage.delete();
-                        visitedPages.remove(oldPage);
+                    if(userVisitedPages.contains(pageForPersistence)) {
+                        VisitedPage oldPage = userVisitedPages.get(userVisitedPages.indexOf(pageForPersistence));
+                        userVisitedPages.remove(oldPage);
                     }
-                    visitedPages.add(currentPage);
-                    if(visitedPages.size() > MAX_VISITED_PAGE_SIZE) {
-                        visitedPages.remove( MAX_VISITED_PAGE_SIZE -1);
+                    userVisitedPages.add(pageForPersistence);
+
+                    // remove old page from history & persistence
+                    if(userVisitedPages.size() > MAX_VISITED_PAGE_SIZE) {
+                        userVisitedPages.remove( MAX_VISITED_PAGE_SIZE - 1);
                     }
                     save();
-                    return Void.TYPE.newInstance();
+                    return null;
                 }
             }
         );
     }
 
-    public void removeVisitPageByPath(String path){
-        List <VisitedPage> pages = (List<VisitedPage>) Cache.get(this.loginId);
+    @SuppressWarnings("unchecked")
+    private void deleteOldPageFromCache() {
+        List<VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
 
-        if(pages == null || pages.size() ==0){
+        if(cachedPages == null){
             return;
         }
 
-        try{
-            for(VisitedPage page: pages){
-                if(page.path.equalsIgnoreCase(path)){
-                    pages.remove(page);
-                    page.delete();
-                }
-            }
-        } catch (OptimisticLockException | ConcurrentModificationException oe){
-            play.Logger.info("Page accessed from cache which already deleted!", oe);
+        if(cachedPages.size() > MAX_VISITED_PAGE_SIZE){
+            cachedPages.remove(MAX_VISITED_PAGE_SIZE -1);
         }
     }
 
-    public void removeVisitPage(String path, String title){
-        final VisitedPage currentPage = VisitedPage.getPage(path, title);
-        List <VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
+    @SuppressWarnings("unchecked")
+    public void removeVisitPageFromCacheByPath(String path){
+        List <VisitedPage> pages = (List<VisitedPage>) Cache.get(this.loginId);
 
-        if (cachedPages == null) {
-            cachedPages = new ArrayList<>();
+        if(pages == null || pages.size() == 0){
+            return;
         }
 
-        if(cachedPages.contains(currentPage)){
+        for(VisitedPage page: pages){
+            if(page.path.equalsIgnoreCase(path)){
+                VisitedPage.globalPageMap.remove(path);
+                pages.remove(page);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void removeVisitPage(final String path, final String title){
+        List <VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
+
+        if (cachedPages != null){
+            VisitedPage currentPage = null;
+            for(VisitedPage page: cachedPages){
+                if(page.path.equalsIgnoreCase(path)){
+                    currentPage = page;
+                }
+            }
             cachedPages.remove(currentPage);
         }
 
+        //remove visited page history from persistence(DB) & global map
         Promise.promise(
                 new Function0<Void>() {
                     public Void apply() throws IllegalAccessException, InstantiationException {
-                        if(visitedPages.contains(currentPage)) {
-                            VisitedPage oldPage = visitedPages.get(visitedPages.indexOf(currentPage));
+                        VisitedPage current = VisitedPage.getPage(path, title);
+                        if(userVisitedPages.contains(current)) {
+                            VisitedPage oldPage = userVisitedPages.get(userVisitedPages.indexOf(current));
+                            userVisitedPages.remove(oldPage);
                             oldPage.delete();
-                            visitedPages.remove(oldPage);
                         }
-                        return Void.TYPE.newInstance();
+                        VisitedPage.globalPageMap.remove(path);
+                        return null;
                     }
                 }
         );

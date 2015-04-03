@@ -4,8 +4,9 @@ import play.data.validation.Constraints.Required;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @Entity
 public class VisitedPage extends Model{
@@ -27,6 +28,9 @@ public class VisitedPage extends Model{
             joinColumns = @JoinColumn(name = "visited_page_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     public List<User> users;
+
+    @Transient
+    public static final Map<String, VisitedPage> globalPageMap = new HashMap<>();
 
     private VisitedPage(String path, String title){
         this.path = path;
@@ -52,17 +56,13 @@ public class VisitedPage extends Model{
         return result;
     }
 
-    public void removeVisitedPageByPath(String path){
-        List<VisitedPage> pages = finder.where().eq("visitedpage.path", path).findList();
-        for(VisitedPage page: pages){
-            page.delete();
-        }
-    }
-
     public static VisitedPage getPage(String path, String title){
-        VisitedPage page = finder.where().eq("path", path).findUnique();
-        if(page == null){
+        VisitedPage page = globalPageMap.get(path); // secondary history cache
+        if(page == null){                           // cache hit fail
             page = new VisitedPage(path, title);
+            globalPageMap.put(path, page);
+        } else {
+            page.title = title; // prepare for title is updated
         }
         return page;
     }
