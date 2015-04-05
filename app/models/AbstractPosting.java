@@ -257,4 +257,11 @@ abstract public class AbstractPosting extends Model implements ResourceConvertib
     }
 
     public abstract void checkLabels() throws IssueLabel.IssueLabelException;
+
+    public Long getLastCommentAddedTime(){
+        if(getComments().size() > 0){
+            return getComments().get(getComments().size()-1).getDate().getTime();
+        }
+        return 0L;
+    }
 }

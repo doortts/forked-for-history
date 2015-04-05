@@ -156,6 +156,8 @@ public class PullRequest extends Model implements ResourceConvertible {
     @OneToMany(mappedBy = "pullRequest")
     public List<CommentThread> commentThreads = new ArrayList<>();
 
+    public Long lastCommentAddedTime = 0L;
+
     @Transient
     private Repository repository;
 

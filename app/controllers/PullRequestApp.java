@@ -36,6 +36,7 @@ import models.enumeration.RoleType;
 import models.enumeration.State;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.joda.time.DateTime;
 import org.tmatesoft.svn.core.SVNException;
 import play.api.mvc.Call;
 import play.data.Form;
@@ -61,6 +62,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -337,7 +339,7 @@ public class PullRequestApp extends Controller {
 
         UserApp.currentUser().visits(project);
         String pageTitle = pullRequest.title + "#" + pullRequest.contributor.name + "@" + pullRequest.contributor.loginId;
-        UserApp.currentUser().addVisitPage(request().path(), pageTitle);
+        UserApp.currentUser().addVisitPage(request().path(), pageTitle, pullRequest.lastCommentAddedTime);
         return ok(view.render(project, pullRequest, canDeleteBranch, canRestoreBranch));
     }
 
@@ -381,6 +383,11 @@ public class PullRequestApp extends Controller {
                                             long pullRequestNumber, String commitId) {
         Project project = Project.findByOwnerAndProjectName(userName, projectName);
         PullRequest pullRequest = PullRequest.findOne(project, pullRequestNumber);
+
+        String pageTitle = pullRequest.title + "#" + pullRequest.contributor.name + "@" + pullRequest.contributor.loginId;
+        String path = request().path().replaceAll("\\?*", "");
+        path = path.replaceAll("/changes$","");
+        UserApp.currentUser().addVisitPage(path, pageTitle, pullRequest.lastCommentAddedTime);
         return ok(views.html.git.viewChanges.render(project, pullRequest, commitId));
     }
 
@@ -619,6 +626,7 @@ public class PullRequestApp extends Controller {
             comment.thread = CommentThread.find.byId(comment.thread.id);
         }
         comment.save();
+        pullRequest.lastCommentAddedTime = new Date().getTime();
         pullRequest.update();
 
         AbstractPostingApp.attachUploadFilesToPost(comment.asResource());

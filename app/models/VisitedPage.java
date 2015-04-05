@@ -22,6 +22,7 @@ public class VisitedPage extends Model{
 
     @Required
     public String title;
+    public Long lastCommentAddedTime;
 
     @ManyToMany
     @JoinTable(name = "visited_page_user",
@@ -32,9 +33,10 @@ public class VisitedPage extends Model{
     @Transient
     public static final Map<String, VisitedPage> globalPageMap = new HashMap<>();
 
-    private VisitedPage(String path, String title){
+    public VisitedPage(String path, String title, Long lastCommentAddedTime){
         this.path = path;
         this.title = title;
+        this.lastCommentAddedTime = lastCommentAddedTime;
     }
 
     @Override
@@ -43,9 +45,7 @@ public class VisitedPage extends Model{
         if (o == null || getClass() != o.getClass()) return false;
 
         VisitedPage that = (VisitedPage) o;
-
-        if (!path.equalsIgnoreCase(that.path)) return false;
-        return true;
+        return path.equalsIgnoreCase(that.path);
     }
 
     @Override
@@ -56,14 +56,11 @@ public class VisitedPage extends Model{
         return result;
     }
 
-    public static VisitedPage getPage(String path, String title){
-        VisitedPage page = globalPageMap.get(path); // secondary history cache
-        if(page == null){                           // cache hit fail
-            page = new VisitedPage(path, title);
-            globalPageMap.put(path, page);
-        } else {
-            page.title = title; // prepare for title is updated
-        }
-        return page;
+    public static VisitedPage findPageByPath(String path){
+        return finder.where().eq("path", path).findUnique();
+    }
+
+    public static VisitedPage getPageFromGlobalCache(String path){
+       return globalPageMap.get(path); // secondary history cache
     }
 }

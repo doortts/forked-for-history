@@ -229,7 +229,7 @@ public class IssueApp extends AbstractPostingApp {
 
         // add recently visited history
         UserApp.currentUser().visits(project);
-        UserApp.currentUser().addVisitPage(request().path(), pageTitle(issueInfo));
+        UserApp.currentUser().addVisitPage(request().path(), pageTitle(issueInfo), issueInfo.getLastCommentAddedTime());
 
         for (IssueLabel label: issueInfo.labels) {
             label.refresh();
@@ -568,7 +568,7 @@ public class IssueApp extends AbstractPostingApp {
         Call redirectTo =
             routes.IssueApp.issues(project.owner, project.name, State.OPEN.state(), "html", 1);
 
-        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(issue));
+        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(issue), issue.getLastCommentAddedTime());
 
         return delete(issue, issue.asResource(), redirectTo);
     }
