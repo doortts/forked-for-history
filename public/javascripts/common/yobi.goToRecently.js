@@ -217,7 +217,7 @@ $(function(){
         $('#visitedPage').on("select2-highlight, select2-opening", function(){
             $("ul.gnb-nav").hide();
             $("#s2id_visitedPage").show();
-            _patchForWindows();
+            _patchForWebkit();
         });
 
         //resize select2 div to default width
@@ -248,11 +248,13 @@ $(function(){
             })
         }
 
-        var _patchForWindows = function () {
-            if(navigator.platform.toUpperCase() === "WIN32"){
-                //select2 scrollbar is too thick in windows, so hide tooltip.
+        var _patchForWebkit = function () {
+            var isSafari = navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1;
+            var isChrome = !!window.chrome;
+            if(isChrome || isSafari){
+                //select2 scrollbar is too thick in chrome, so hide tooltip.
                 //To prevent it, additional css is required.
-                $(".select2-results").addClass("windowsWebkitScrollbar");
+                $(".select2-results").addClass("webkitScrollbar");
             }
         };
     }
