@@ -607,7 +607,8 @@ public class ProjectApp extends Controller {
         if (!newOwnerUser.isAnonymous()) {
             ProjectUser.assignRole(newOwnerUser.id, project.id, RoleType.MANAGER);
         }
-        if (ProjectUser.isManager(pt.sender.id, project.id)) {
+
+        if (ProjectUser.isManager(pt.sender.id, project.id) && !project.owner.equals(pt.sender.loginId)) {
             ProjectUser.assignRole(pt.sender.id, project.id, RoleType.MEMBER);
         }
 
