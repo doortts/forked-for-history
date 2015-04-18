@@ -92,7 +92,8 @@ $(function(){
             return $yobi.tmpl($("#tplVisitedPage").text(), {
                 "name"      : itemObject.text,
                 "url"       : _extractProjectNameAndNo(element),
-                "author"    : author
+                "author"    : author,
+                "isUpdated" : element.data("isUpdated") || ""
             });
         }
 
@@ -159,8 +160,9 @@ $(function(){
         // preparations
         (function includePathStringAtSearch(){
             var path = itemElement.data("path");
+            var isUpdated = itemElement.data("is-updated") ? "/!!" : "";
             var parsedPath;
-            var prefixForPage = "#/";
+            var prefixForPage = "#/" + isUpdated;
             if(path){
                 parsedPath = path.split("/");
                 text = parsedPath[2] + text + _getPrefixForNoType(parsedPath[3]) + parsedPath[4];    // projectName + no

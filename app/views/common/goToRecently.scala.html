@@ -20,6 +20,11 @@
 **@
 @()
 @import utils.TemplateHelper._
+@isUpdated(page: UserVisitedPage) = @{
+    if(page.visitedPage.lastCommentAddedTime != null && page.lastVisitedTime < page.visitedPage.lastCommentAddedTime){
+        "page-updated"
+    }
+}
 
               <div id="goto-link-dummy" class="transparent-bg" style="display: none">@Messages("title.recently.visited") (@Messages("title.shortcut"): j)</div>
               <select id="visitedPage" name="visitedPage" data-format="visitedPage" data-placeholder="@Messages("title.recently.visited") (@Messages("title.shortcut"): j)" data-toggle="select2" style="width:500px" data-container-css-class="fullsize">
@@ -42,9 +47,9 @@
                       }
                   }
                 </optgroup>
-                <optgroup label="@Messages("title.recentlyVisitedPage") (@Messages("title.shortcut") '#' )">
+                <optgroup label="@Messages("title.recentlyVisitedPage") (@Messages("title.shortcut"): / , @Messages("title.new.commented.page.only"): // )">
                   @for(page <- User.getRecentlyVisitedPages(UserApp.currentUser())){
-                      <option value="@page.path" data-path="@page.path" data-author="@page.title.substring(page.title.lastIndexOf("#")+1)" title="@page.path">@page.title.substring(0, page.title.lastIndexOf("#"))</option>
+                      <option value="@page.getPath" data-path="@page.getPath" data-author="@page.getTitle.substring(page.getTitle.lastIndexOf("#")+1)" title="@page.getPath" data-is-updated="@isUpdated(page)">@page.getTitle.substring(0, page.getTitle.lastIndexOf("#"))</option>
                   }
                 </optgroup>
                 <optgroup label="@Messages("title.watching")">

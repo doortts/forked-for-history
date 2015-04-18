@@ -20,6 +20,7 @@
  */
 package controllers;
 
+import actions.support.PathParser;
 import actors.PullRequestMergingActor;
 import akka.actor.Props;
 import com.avaje.ebean.Page;
@@ -385,8 +386,8 @@ public class PullRequestApp extends Controller {
         PullRequest pullRequest = PullRequest.findOne(project, pullRequestNumber);
 
         String pageTitle = pullRequest.title + "#" + pullRequest.contributor.name + "@" + pullRequest.contributor.loginId;
-        String path = request().path().replaceAll("\\?*", "");
-        path = path.replaceAll("/changes$","");
+        String path = routes.PullRequestApp.pullRequest(userName, projectName, pullRequestNumber).url();
+
         UserApp.currentUser().addVisitPage(path, pageTitle, pullRequest.lastCommentAddedTime);
         return ok(views.html.git.viewChanges.render(project, pullRequest, commitId));
     }

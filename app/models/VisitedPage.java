@@ -24,11 +24,8 @@ public class VisitedPage extends Model{
     public String title;
     public Long lastCommentAddedTime;
 
-    @ManyToMany
-    @JoinTable(name = "visited_page_user",
-            joinColumns = @JoinColumn(name = "visited_page_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    public List<User> users;
+    @OneToMany(mappedBy = "visitedPage", cascade = CascadeType.ALL)
+    public List<UserVisitedPage> userVisitedPages;
 
     @Transient
     public static final Map<String, VisitedPage> globalPageMap = new HashMap<>();
@@ -62,5 +59,14 @@ public class VisitedPage extends Model{
 
     public static VisitedPage getPageFromGlobalCache(String path){
        return globalPageMap.get(path); // secondary history cache
+    }
+
+    public UserVisitedPage getUserVisitedPage(User user){
+        for(UserVisitedPage page: this.userVisitedPages){
+            if(page.user.equals(user)){
+                return page;
+            }
+        }
+        return null;
     }
 }
