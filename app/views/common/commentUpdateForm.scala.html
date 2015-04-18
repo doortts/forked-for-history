@@ -29,6 +29,12 @@
                 @common.editor("contents", contents,"", "update-comment-body")
 
                 <div class="right-txt comment-update-button">
+                    <span class="send-notification-check" data-toggle='popover' data-trigger="hover" data-placement="top" data-content="@Messages("notification.send.mail.warning")">
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="notificationMail" id="notificationMail" value="yes" checked>
+                            <strong>@Messages("notification.send.mail")</strong>
+                        </label>
+                    </span>
                     <button type="button" class="ybtn ybtn-cancel" data-comment-id="@commentId">@Messages("button.cancel")</button>
                     <button type="submit" class="ybtn ybtn-info">@Messages("button.save")</button>
                 </div>

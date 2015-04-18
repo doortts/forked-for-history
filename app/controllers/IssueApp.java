@@ -524,9 +524,11 @@ public class IssueApp extends AbstractPostingApp {
                 issue.comments = originalIssue.comments;
                 addLabels(issue, request());
 
-                addAssigneeChangedNotification(issue, originalIssue);
-                addStateChangedNotification(issue, originalIssue);
-                addBodyChangedNotification(issue, originalIssue);
+                if(isSelectedToSendNotificationMail() || !isOriginalAuthor(originalIssue.authorLoginId)){
+                    addAssigneeChangedNotification(issue, originalIssue);
+                    addStateChangedNotification(issue, originalIssue);
+                    addBodyChangedNotification(issue, originalIssue);
+                }
             }
         };
 
@@ -609,7 +611,9 @@ public class IssueApp extends AbstractPostingApp {
         if (existingComment != null) {
             existingComment.contents = comment.contents;
             savedComment = saveComment(existingComment, getContainerUpdater(issue, comment));
-            NotificationEvent.afterCommentUpdated(savedComment);
+            if(isSelectedToSendNotificationMail() || !isOriginalAuthor(existingComment.authorLoginId)){
+                NotificationEvent.afterCommentUpdated(savedComment);
+            }
         } else {
             savedComment = saveComment(comment, getContainerUpdater(issue, comment));
             NotificationEvent.afterNewComment(savedComment);

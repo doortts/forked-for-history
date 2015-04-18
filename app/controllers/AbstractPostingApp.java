@@ -33,6 +33,8 @@ import play.i18n.Messages;
 import play.mvc.*;
 import utils.*;
 
+import java.util.Map;
+
 @AnonymousCheck
 public class AbstractPostingApp extends Controller {
     public static final int ITEMS_PER_PAGE = 15;
@@ -155,5 +157,37 @@ public class AbstractPostingApp extends Controller {
             return false;
         }
         return StringUtils.isNotBlank(files[0]);
+    }
+
+    protected static boolean isSelectedToSendNotificationMail() {
+        String [] checkSendNotiMail = null;
+        Http.MultipartFormData multipartFormData = request().body().asMultipartFormData();
+        try {
+            if(multipartFormData == null){
+                Map<String,String[]> formData = request().body().asFormUrlEncoded();
+                if(formData != null){
+                    checkSendNotiMail = formData.get("notificationMail");
+                } else {
+                    throw new NullPointerException("Not a valid form data");
+                }
+            } else {
+                checkSendNotiMail = multipartFormData.asFormUrlEncoded().get("notificationMail");
+            }
+
+            if( checkSendNotiMail == null || checkSendNotiMail.length == 0){
+                return false;
+            }
+        } catch (NullPointerException npe){
+            play.Logger.error("User selected notification mail option didn't work!!", npe);
+        }
+        return "yes".equalsIgnoreCase(checkSendNotiMail[0]);
+    }
+
+    private static boolean isMultiPartFormData() {
+        return request().body().asMultipartFormData() != null;
+    }
+
+    protected static boolean isOriginalAuthor(String authorLoginId) {
+        return UserApp.currentUser().loginId.equals(authorLoginId);
     }
 }
