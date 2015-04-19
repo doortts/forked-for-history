@@ -21,7 +21,8 @@
 @()
 @import utils.TemplateHelper._
 @isUpdated(page: UserVisitedPage) = @{
-    if(page.visitedPage.lastCommentAddedTime != null && page.lastVisitedTime < page.visitedPage.lastCommentAddedTime){
+    val vp = VisitedPage.getPageFromGlobalCache(page.visitedPage.path)
+    if(page.visitedPage.lastCommentAddedTime != null && page.lastVisitedTime < vp.lastCommentAddedTime){
         "page-updated"
     }
 }

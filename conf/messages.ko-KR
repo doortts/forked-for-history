@@ -854,6 +854,7 @@ title.signup = 회원 가입
 title.signupFor = <span class="highlight">{0}</span> 회원가입
 title.siteSetting = 사이트 설정
 title.shortcut = 단축키
+title.new.commented.page.only = 새 코멘트 달린 페이지
 title.text = 제목
 title.unlimitedProjects = 제한 없는 프로젝트 생성
 title.watching = 지켜보는

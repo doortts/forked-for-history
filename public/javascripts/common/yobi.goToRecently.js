@@ -80,6 +80,8 @@ $(function(){
         var element = $(itemObject.element);
         var author = _extractAuthorOrOwner(element);
         var avatarURL = element.data("avatarUrl");
+        var exceptionalPostfixForPullRequestPage = "/changes";
+        var isUpdated = $(element.data("isUpdated"));
 
         if(_hasProjectAvatar(avatarURL)){
             return $yobi.tmpl($("#tplVisitedPageWithAvatar").text(), {
@@ -105,12 +107,12 @@ $(function(){
             return authorName || itemElement.data("owner"); //user owner for author if author doesn't provide
         }
 
-        function _extractProjectNameAndNo(element){ //parse project name if title is path
+        function _extractProjectNameAndNo(path){ //parse project name if title is path
             var title = element.attr("title");
             if(title){
-                var parsed = title.split("/");
-                if (parsed[3] && _getPrefixForNoType(parsed[3])) {
-                    return parsed[2] + _getPrefixForNoType(parsed[3]) + parsed[4] || title; //add # for issue
+                var parsed = title.split("/"); //expectation: ["", owner, projectname, issue/board/pullrequest, number]
+                if (parsed[3] && _getNumberPrefixForPageType(parsed[3])) {
+                    return parsed[2] + _getNumberPrefixForPageType(parsed[3]) + parsed[4] || title; //add # for issue
                 }
             }
             return title;
@@ -125,52 +127,79 @@ $(function(){
         }
     }
 
-    function _getPrefixForNoType(type){
-        var target = type.toLowerCase();
-        if(target === "issue") {
+    function _isPullRequestPage(path){
+        if(path){
+            var parsed = path.split("/"); //expectation: ["", owner, projectname, issue/board/pullrequest, number]
+            if (parsed[3]) {
+                return parsed[3].toLowerCase() === "pullrequest";
+            }
+        }
+        return false;
+    }
+
+    function _getNumberPrefixForPageType(type){
+        var pageType = type.toLowerCase();
+        if(pageType === "issue") {
             return " #";
-        } else if (target === "post"){
+        } else if (pageType === "post"){
             return " ";
-        } else if (target === "pullrequest"){
+        } else if (pageType === "pullrequest"){
             return " %";
         }
         return undefined;
     }
 
+    /**
+     * fuzzy matcher
+     *
+     * Standard fuzzy matcher implementation except that
+     * it use depth & searched item memoization for performance.
+     *
+     * @param search: search keywords
+     * @param text: target text
+     * @param itemElement: select option html
+     * @returns {boolean}: isMatched or not
+     */
     var resultMap = {};  // for memoization
-    var prevDepth = 0;       // index for memoization depth according to search text length
+    var prevDepth = 0;   // index for memoization depth according to search text length
+
+        function isMatchedAlreadyAtPreviousDepth(currentDepth, text) {
+        return resultMap[currentDepth - 1].indexOf(text) == -1;
+    }
 
     function fuzzyMatcher(search, text, itemElement) {
-        // remove garbage tooltip (tooltip bug)
-        setTimeout(function(){
-            $('.tooltip.right.in').remove();
-        }, 10);
+        _removeGarbageTooltip();
+
         var currentDepth = search.length;
 
-        if(prevDepth > currentDepth){ // depth down. erase search text
+        if(prevDepth > currentDepth){ // if depth is decreased. eg. user remove search character
             resultMap[prevDepth] = [];
             prevDepth = currentDepth;
         }
 
-        if(prevDepth + 1 === currentDepth){ // at the first deeper state
+        if(prevDepth + 1 === currentDepth){ // enter deeper state
             resultMap[currentDepth] = [];   // ready for new depth of memo
             prevDepth = currentDepth;
         }
 
         // preparations
-        (function includePathStringAtSearch(){
+        (function includePathToSearchScope(){
             var path = itemElement.data("path");
-            var isUpdated = itemElement.data("is-updated") ? "/!!" : "";
+            var isUpdated = itemElement.data("is-updated") ? "/!!" : ""; // marker for newly updated page
             var parsedPath;
             var prefixForPage = "#/" + isUpdated;
             if(path){
                 parsedPath = path.split("/");
-                text = parsedPath[2] + text + _getPrefixForNoType(parsedPath[3]) + parsedPath[4];    // projectName + no
-                text = prefixForPage + text.replace(/\//g, ""); // remove slashs
+                if(parsedPath.length < 4){
+                    console.log("Wrong url path format: ", path);
+                    return;
+                }
+                text = parsedPath[2] + text + _getNumberPrefixForPageType(parsedPath[3]) + parsedPath[4];    // projectName + no
+                text = prefixForPage + text.replace(/\//g, ""); // remove slashes in path url
             }
         }());
 
-        (function includeAuthStringAtSearch(){
+        (function includeAuthorToSearchScope(){
             var author = itemElement.data("author");
             var mentionPrefix = "@";
             if(author){
@@ -181,19 +210,19 @@ $(function(){
         search = search.toUpperCase();
         text = text.toUpperCase();
 
-        if(currentDepth > 1 && resultMap[currentDepth-1].indexOf(text) == -1){ // filtering start at 2th depth
+        if(currentDepth > 1 && isMatchedAlreadyAtPreviousDepth(currentDepth, text)){ // filtering start at 2th depth
             return false;
         }
 
-        var j = -1; // remembers position of last found character
+        var lastFoundPosition = -1; // remembers position of last found character
 
         // consider each search character one at a time
         for (var i = 0; i < search.length; i++) {
-            var l = search[i];
-            if (l == ' ') continue;     // ignore spaces
+            var char = search[i];
+            if (char == ' ') continue;     // ignore spaces
 
-            j = text.indexOf(l, j+1);   // search for character & update position
-            if (j == -1) {
+            lastFoundPosition = text.indexOf(char, lastFoundPosition + 1);   // search for character & update position
+            if (lastFoundPosition == -1) {
                 return false;
             }  // if it's not found, exclude this item
         }
@@ -202,6 +231,13 @@ $(function(){
             resultMap[currentDepth].push(text);
         }
         return true;
+    }
+
+    function _removeGarbageTooltip() {
+        // remove garbage tooltip (tooltip bug workaround)
+        setTimeout(function () {
+            $('.tooltip.right.in').remove();
+        }, 10);
     }
 
     function addShortcutAndUIEffectAtGoToRecently() {
@@ -263,7 +299,15 @@ $(function(){
 
     function addEventAtGoToRecentlySelectBox() {
         $("#visitedPage" ).on("change", function(choice){
-            location.href= choice.val;
+            if($(choice.added.element[0]).data("isUpdated")){
+                if( _isPullRequestPage(choice.val)){
+                    location.href= choice.val + "/changes";
+                } else {
+                    location.href= choice.val + "#last-comment";
+                }
+            } else {
+                location.href= choice.val;
+            }
         });
     }
 
@@ -284,8 +328,7 @@ $(function(){
         if(["INPUT","TEXTAREA"].indexOf(activeElementName) !== -1){ // avoid already somewhere input focused state
             return false;
         }
-        return (event.which == 107 || event.which == 12623     // keycode => 107: k, 12623: ㅏ
-            || event.which == 106 || event.which == 12627);     // keycode => 106: j, 12627: ㅓ
+        return (event.which == 106 || event.which == 12627);     // keycode => 106: j, 12627: ㅓ
     }
 });
 

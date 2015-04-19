@@ -16,17 +16,11 @@ import scala.collection.JavaConversions._
 import views.html.partial_diff_comment_on_line
 import views.html.partial_diff_line
 import views.html.git.partial_pull_request_event
-import models.Organization
-import models.PullRequestEvent
-import models.PullRequest
-import models.Project
-import models.Issue
+import models._
 import java.net.URLEncoder
 import scala.annotation.tailrec
 import playRepository.FileDiff
 import play.api.i18n.Lang
-import models.CodeCommentThread
-import models.CommentThread
 import play.twirl.api.Html
 
 object TemplateHelper {
@@ -552,4 +546,11 @@ object TemplateHelper {
 
   }
 
+  def lastOrLastBeforeCommentMarker(currentComment: Comment, comments: java.util.List[Comment]): String  = {
+      if(currentComment.id.equals(comments.get(comments.size - 1).id)){
+        "id='last-comment'"
+      } else {
+        ""
+      }
+  }
 }

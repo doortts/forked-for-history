@@ -177,3 +177,9 @@
     -o-box-sizing:@param;
     box-sizing: @param;
 }
+
+.box-shadow-shallow (@x: 1px, @y: 1px, @blur: 1px, @alpha: 0.1) {
+    -webkit-box-shadow: @x @y @blur rgba(0, 0, 0, @alpha) !important;
+    -moz-box-shadow: @x @y @blur rgba(0, 0, 0, @alpha) !important;
+    box-shadow: @x @y @blur rgba(0, 0, 0, @alpha) !important;
+}

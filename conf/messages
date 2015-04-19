@@ -854,6 +854,7 @@ title.signup = Sign up
 title.signupFor = Sign up for <span class="highlight">{0}</span>
 title.siteSetting = Site settings
 title.shortcut = shortcut
+title.new.commented.page.only = newly comment added page
 title.text = Title
 title.unlimitedProjects = Unlimited project creation
 title.watching = Watching

@@ -38,7 +38,7 @@
 <ul class="comments">
 @for(comment <-post.comments){
     <li class="comment @isAuthorComment(comment.authorLoginId)" id="comment-@comment.id">
-        <div class="comment-avatar">
+        <div @Html(lastOrLastBeforeCommentMarker(comment, post.comments.asInstanceOf[List[Comment]])) class="comment-avatar">
             <a href="@routes.UserApp.userInfo(comment.authorLoginId)" class="avatar-wrap" data-toggle="tooltip" data-placement="top" title="@comment.authorName">
                 <img src="@User.findByLoginId(comment.authorLoginId).avatarUrl" width="32" height="32" alt="@comment.authorLoginId">
             </a>
