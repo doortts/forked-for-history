@@ -19,6 +19,7 @@
 * limitations under the License.
 **@
 @(title:String, project:Project, targetType:String)
+@import play.mvc.Http
 
 @getMenuType(target:String) = @{
     target match {
@@ -48,6 +49,8 @@
 
 @projectLayout(title, project, utils.MenuType.NONE) {
 @projectMenu(project, getMenuType(targetType), "")
+@* remove visited page in case of page deletion *@
+@UserApp.currentUser().removeVisitPageByPath(Http.Context.current().request().path());
 <div class="page-wrap-outer">
     <div class="project-page-wrap">
         <div class="error-wrap">

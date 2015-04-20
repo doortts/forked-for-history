@@ -1,0 +1,65 @@
+@**
+* Yobi, Project Hosting SW
+*
+* Copyright 2015 NAVER Corp.
+* http://yobi.io
+*
+* @author Suwon Chae
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+**@
+@()
+@import utils.TemplateHelper._
+
+              <div id="goto-link-dummy" class="transparent-bg" style="display: none">@Messages("title.recently.visited") (@Messages("title.shortcut"): j)</div>
+              <select id="visitedPage" name="visitedPage" data-format="visitedPage" data-placeholder="@Messages("title.recently.visited") (@Messages("title.shortcut"): j)" data-toggle="select2" style="width:450px" data-container-css-class="fullsize">
+                <option></option>
+                <optgroup label="@Messages("project.recently.visited")">
+                  @defining(UserApp.currentUser.getVisitedProjects(20)) { visitedProjects =>
+                      @if(visitedProjects.size > 0) {
+                          @for(visited <- visitedProjects) {
+                              <option value="@controllers.routes.IssueApp.issues(visited.project.owner, visited.project.name)" data-avatar-url="@urlToProjectLogo(visited.project)" data-project="@visited.project.name" data-owner="@visited.project.owner" >@visited.project.name</option>
+                          }
+                      }
+                  }
+                </optgroup>
+                <optgroup label="@Messages("title.organization")">
+                  @defining(UserApp.currentUser.getOrganizations(30)) { groups =>
+                      @if(groups.size > 0) {
+                          @for(organization <- groups) {
+                              <option value="@routes.OrganizationApp.organization(organization.name)" data-avatar-url="@urlToOrganizationLogo(organization)">@organization.name</option>
+                          }
+                      }
+                  }
+                </optgroup>
+                <optgroup label="@Messages("title.recentlyVisitedPage") (@Messages("title.shortcut") '#' )">
+                  @for(page <- User.getRecentlyVisitedPages(UserApp.currentUser())){
+                      <option value="@page.path" data-path="@page.path" data-author="@page.title.substring(page.title.lastIndexOf("#")+1)" title="@page.path">@page.title.substring(0, page.title.lastIndexOf("#"))</option>
+                  }
+                </optgroup>
+                <optgroup label="@Messages("title.watching")">
+                @for(project <- UserApp.currentUser().getWatchingProjects("name ASC")){
+                    <option value="@controllers.routes.IssueApp.issues(project.owner, project.name)" data-avatar-url="@urlToProjectLogo(project)" data-owner="@project.owner">@project.name</option>
+                }
+                </optgroup>
+                <optgroup label="@Messages("title.createdByMe")">
+                  @for(project <- Project.findProjectsCreatedByUser(UserApp.currentUser().loginId, "createdDate DESC")){
+                      <option value="@controllers.routes.IssueApp.issues(project.owner, project.name)" data-avatar-url="@urlToProjectLogo(project)">@project.name</option>
+                  }
+                  </optgroup>
+                  <optgroup label="@Messages("title.joinmember")">
+                  @for(project <- Project.findProjectsJustMemberAndNotOwner(UserApp.currentUser(), "name ASC")){
+                      <option value="@controllers.routes.IssueApp.issues(project.owner, project.name)" data-avatar-url="@urlToProjectLogo(project)" data-owner="@project.owner">@project.name</option>
+                  }
+                </optgroup>
+              </select>

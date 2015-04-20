@@ -336,6 +336,8 @@ public class PullRequestApp extends Controller {
         }
 
         UserApp.currentUser().visits(project);
+        String pageTitle = pullRequest.title + "#" + pullRequest.contributor.name + "@" + pullRequest.contributor.loginId;
+        UserApp.currentUser().addVisitPage(request().path(), pageTitle);
         return ok(view.render(project, pullRequest, canDeleteBranch, canRestoreBranch));
     }
 

@@ -45,9 +45,7 @@ import utils.*;
 import views.html.issue.*;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @AnonymousCheck
 public class IssueApp extends AbstractPostingApp {
@@ -220,6 +218,7 @@ public class IssueApp extends AbstractPostingApp {
                 result.put("body", Messages.get("error.notfound.issue_post"));
                 return ok(result);
             } else {
+                UserApp.currentUser().removeVisitPageByPath(request().path());
                 return notFound(ErrorViews.NotFound.render("error.notfound", project, ResourceType.ISSUE_POST.resource()));
             }
         }
@@ -228,13 +227,16 @@ public class IssueApp extends AbstractPostingApp {
             return forbidden(ErrorViews.Forbidden.render("error.forbidden", project));
         }
 
+        // add recently visited history
+        UserApp.currentUser().visits(project);
+        UserApp.currentUser().addVisitPage(request().path(), pageTitle(issueInfo));
+
         for (IssueLabel label: issueInfo.labels) {
             label.refresh();
         }
 
         Form<Comment> commentForm = new Form<>(Comment.class);
         Form<Issue> editForm = new Form<>(Issue.class).fill(Issue.findByNumber(project, number));
-        UserApp.currentUser().visits(project);
         // Determine response type with Accept header
         if (HttpUtil.isJSONPreferred(request())){
             ObjectNode result = Json.newObject();
@@ -566,7 +568,13 @@ public class IssueApp extends AbstractPostingApp {
         Call redirectTo =
             routes.IssueApp.issues(project.owner, project.name, State.OPEN.state(), "html", 1);
 
+        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(issue));
+
         return delete(issue, issue.asResource(), redirectTo);
+    }
+
+    private static String pageTitle(Issue issue) {
+        return issue.title + "#" + issue.authorName + "@" + issue.authorLoginId;
     }
 
     /**

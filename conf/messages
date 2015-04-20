@@ -578,7 +578,7 @@ project.public = PUBLIC
 project.public.notice = Anonymous users are available to access the project.
 project.readme = README.md will be shown here if you add it into the code repository''s root directory.
 project.readme.create = create README
-project.recently.visited = Recently visited
+project.recently.visited = Recently visited project
 project.reviewer.count = Reviewer
 project.reviewer.count.description = of reviewers is required to accept pull request.
 project.reviewer.count.disable = Disable
@@ -844,6 +844,7 @@ title.projectMembers = Member list
 title.projectSetting = Project settings
 title.projectTransfer = Project Transfer
 title.recently.visited =  Recently visited
+title.recentlyVisitedPage = Recently visited page
 title.rememberMe = Stay logged in
 title.resetPassword = Reset password
 title.resetPasswordFor = Reset password for <span class="highlight">{0}</span>
@@ -852,6 +853,7 @@ title.sendMail = Send email
 title.signup = Sign up
 title.signupFor = Sign up for <span class="highlight">{0}</span>
 title.siteSetting = Site settings
+title.shortcut = shortcut
 title.text = Title
 title.unlimitedProjects = Unlimited project creation
 title.watching = Watching

@@ -19,12 +19,14 @@
 * limitations under the License.
 **@
 @(project:Project)
-@import utils.TemplateHelper._
 @orderString = @{"createdDate DESC"}
 <ul class="gnb-usermenu">
     @requestHeader.session.get("loginId") match {
       case Some(loginId) => {
-       <li class="gnb-usermenu-item">
+		<li id="goto-recently-container">
+		  <a data-pjax id="goto-link" class="transparent-bg" href="@routes.UserApp.goToRecentlyView()">@Messages("title.recently.visited") (@Messages("title.shortcut"): j)</a>
+		</li>
+        <li class="gnb-usermenu-item">
           <a href="@routes.Application.index()" class="user-item-btn">@Messages("notification")</a>
        </li>
        <li class="divider"></li>
@@ -65,40 +67,6 @@
                         @Messages("title.logout")
                     </a>
                 </li>
-                @defining(UserApp.currentUser.getOrganizations(10)) { groups =>
-                    <li class="title">
-                        @Messages("title.organization")
-                        <span class="numberic">@groups.size</span>
-                    </li>
-                    @if(groups.size > 0) {
-                        @for(organization <- groups){
-                            <li><a href="@routes.OrganizationApp.organization(organization.name)">@if(hasOrganizationLogo(organization)){<img src="@urlToOrganizationLogo(organization)">}else{<span class="dummy-25px"> </span>} <span class="bold">@organization.name</span></a></li>
-                        }
-                    } else {
-                        <li class="empty">@Messages("organization.is.empty")</li>
-                    }
-                }
-                @defining(UserApp.currentUser.getVisitedProjects(10)){ visitedProjects =>
-                    <li class="title">
-                        @Messages("project.recently.visited")
-                        <span class="numberic">@visitedProjects.size</span>
-                    </li>
-                    @if(visitedProjects.size > 0) {
-                        @for(visited <- visitedProjects){
-                            <li><a href="@routes.ProjectApp.project(visited.project.owner, visited.project.name)">@if(hasProjectLogo(visited.project)){<img src="@urlToProjectLogo(visited.project)">} else{<span class="dummy-25px"> </span>} <span class="bold">@visited.project.name</span> <span class="darkgray-txt small-font margin-right-15">of @visited.project.owner</span></a></li>
-                        }
-                    } else {
-                        @defining(Project.findProjectsCreatedByUser(UserApp.currentUser.loginId, orderString)) { myProjects =>
-                            @if(myProjects.size > 0) {
-                                @for(project <- myProjects){
-                                    <li>@if(hasProjectLogo(project)){<img src="@urlToProjectLogo(project)">} <a href="@routes.ProjectApp.project(project.owner, project.name)"><span class="bold">@project.name</span> <span class="darkgray-txt small-font margin-right-15">of @project.owner</span></a></li>
-                                }
-                            } else {
-                                <li class="empty">@Messages("project.is.empty")</li>
-                            }
-                        }
-                    }
-                }
             </ul>
         </li>
       <li class="gnb-usermenu-dropdown">
@@ -135,3 +103,4 @@
       }
     }
 </ul>
+@common.select2()

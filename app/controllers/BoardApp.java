@@ -184,7 +184,10 @@ public class BoardApp extends AbstractPostingApp {
             return ok(json);
         }
 
+        // add recently visited history
         UserApp.currentUser().visits(project);
+        UserApp.currentUser().addVisitPage(request().path(), pageTitle(post));
+
         Form<PostingComment> commentForm = new Form<>(PostingComment.class);
         return ok(view.render(post, commentForm, project));
     }
@@ -258,7 +261,13 @@ public class BoardApp extends AbstractPostingApp {
         Posting posting = Posting.findByNumber(project, number);
         Call redirectTo = routes.BoardApp.posts(project.owner, project.name, 1);
 
+        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(posting));
+
         return delete(posting, posting.asResource(), redirectTo);
+    }
+
+    private static String pageTitle(Posting posting) {
+        return posting.title + "#" + posting.authorName + "@" + posting.authorLoginId;
     }
 
     /**

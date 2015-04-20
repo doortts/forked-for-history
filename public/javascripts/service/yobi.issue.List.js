@@ -210,12 +210,12 @@
             }
 
             // on click pagination
-            $(document).on("click", "a[pjax-page]", function(weEvt) {
+            $(".project-page-wrap").on("click", "a[pjax-page]", function(weEvt) {
                 $.pjax.click(weEvt, "div[pjax-container]", htPjaxOptions);
             });
 
             // on submit search form
-            $(document).on("submit", "form[name='search']", function(weEvt) {
+            $(".project-page-wrap").on("submit", "form[name='search']", function(weEvt) {
                 $.pjax.submit(weEvt, "div[pjax-container]", htPjaxOptions);
             });
 
@@ -247,7 +247,7 @@
          */
         function _initSelect2(){
             if(typeof yobi.ui.Select2 === "function"){
-                $('[data-toggle="select2"]').each(function(i, el){
+                $('.select2-marker').each(function(i, el){
                     yobi.ui.Select2(el);
                 });
             }

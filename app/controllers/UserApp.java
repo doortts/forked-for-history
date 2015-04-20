@@ -934,4 +934,16 @@ public class UserApp extends Controller {
             return false;
         }
     }
+
+
+    public static Result goToRecentlyView(){
+        return ok(views.html.common.goToRecently.render());
+    }
+
+
+    public static Result goToRecently(){
+        response().setContentType("application/json;charset=UTF-8");
+        return ok(views.html.common.goToRecentlyjson.render());
+    }
+
 }

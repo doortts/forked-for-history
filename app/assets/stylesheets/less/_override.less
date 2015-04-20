@@ -104,22 +104,24 @@
 }
 
 .select2-results {
-    max-height: 350px;
-    padding:4px; margin:4px 0 0 0;
+    max-height: 450px;
+    font-size: 12x;
 
     li { margin-bottom:1px; }
 
     .avatar-wrap { margin-top:0; }
 
     .select2-highlighted {
-        background: @secondary;
+        background: #4E5051;
         color: #fff;
 
         .loginid { color:#fff; }
+        p {
+          color: #ddd !important;
+        }
     }
 
     .select2-result-label {
-        padding:3px 7px 4px 8px;
         white-space: nowrap;
     }
 
@@ -348,9 +350,33 @@ li.select2-result-with-children:first-of-type {
   font-size: 12px;
 }
 
+#s2id_visitedPage.select2-container {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #ddd;
+  height: 36px;
+}
+
+#s2id_visitedPage.select2-container:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
 .tooltip.in {
-  font-size: 12px;
   opacity: 1;
   filter: alpha(opacity=100);
 }
+
+.tooltip.right.in {
+  padding: 0px 0px;
+  font-family: @fixed-font-family;
+  background-color: #27abe1;
+  margin-top: 2px;
+}
+
+.tooltip.right.in > .tooltip-inner {
+  max-width: 400px;
+  background-color: #27abe1;
+  margin-left: 3px;
+  line-height: 1.1;
+}
+.tooltip.right.in > .tooltip-arrow {border-right-color: #27abe1;}
 

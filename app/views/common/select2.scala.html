@@ -45,3 +45,27 @@
     ${name}
 </div>
 </script>
+<script id="tplSelect2Projects" type="text/x-jquery-tmpl">
+<div class="usf-group" title="${name}">
+    <span class="avatar-wrap smaller"><img src="${avatarURL}" width="16" height="16"></span>
+    <span class="name">${name}</span>
+</div>
+</script>
+<script id="tplSelect2ProjectsWithoutAvatar" type="text/x-jquery-tmpl">
+<div class="usf-group" title="${name}">
+    <span class="avatar-wrap smaller"> </span>
+    <span class="name">${name}</span>
+</div>
+</script>
+<script id="tplVisitedPage" type="text/x-jquery-tmpl">
+<div class="usf-group gray-tooltip" data-toggle="tooltip" data-placement="right" data-container="body" title="${url}" data-animation="false" style="white-space: initial">
+    <span class="name">${name} </span>
+    <span class="small-font darkgray-txt small-font-family margin-left-1 pull-right" >${author}</span>
+</div>
+</script>
+<script id="tplVisitedPageWithAvatar" type="text/x-jquery-tmpl">
+<div class="usf-group gray-tooltip" data-toggle="tooltip" data-placement="right" data-container="body" title="${url}" data-animation="false" data-container="body"  style="white-space: initial">
+    <span class="avatar-wrap smaller"><img src="${avatarURL}" width="20" height="20"></span><span class="name">${name}</span>
+    <span class="small-font darkgray-txt small-font-family margin-left-1 pull-right">${author}</span>
+</div>
+</script>

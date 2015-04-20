@@ -39,14 +39,16 @@ import play.data.validation.Constraints.Required;
 import play.data.validation.Constraints.ValidateWith;
 import play.db.ebean.Model;
 import play.db.ebean.Transactional;
+import play.libs.F.Function0;
+import play.libs.F.Promise;
 import play.i18n.Messages;
 import utils.JodaDateUtil;
 import utils.ReservedWordsValidator;
-
 import javax.persistence.*;
 import javax.persistence.OrderBy;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import play.cache.Cache;
 
 @Table(name = "n4user")
 @Entity
@@ -73,6 +75,7 @@ public class User extends Model implements ResourceConvertible {
     public static final String LOGIN_ID_PATTERN_ALLOW_FORWARD_SLASH = "[a-zA-Z0-9-/]+([_.][a-zA-Z0-9-/]+)*";
 
     public static final User anonymous = new NullUser();
+    private static final int MAX_VISITED_PAGE_SIZE = 100;
 
     @Id
     public Long id;
@@ -178,6 +181,9 @@ public class User extends Model implements ResourceConvertible {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     public List<OrganizationUser> organizationUsers;
+
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    public List<VisitedPage> visitedPages = new ArrayList<>();
 
     public User() {
     }
@@ -786,5 +792,100 @@ public class User extends Model implements ResourceConvertible {
       result = result * 37 + (this.id != null ? this.id.hashCode() : 0);
       result = result * 37 + (this.loginId != null ? this.loginId.hashCode() : 0);
       return result;
+    }
+
+    public static List<VisitedPage> getRecentlyVisitedPages(User user){
+        List<VisitedPage> vps = (List<VisitedPage>) Cache.get(UserApp.currentUser().loginId);
+        if (vps == null) { // cache is reset or first time using cache
+            if(user.visitedPages.size() > 0){
+                vps = new ArrayList<>(user.visitedPages);
+                Collections.reverse(vps);
+            } else {
+                vps = new ArrayList<>();
+            }
+            Cache.set(user.loginId, vps);
+        }
+        return vps;
+    }
+
+    public void addVisitPage(String path, String title){
+        if(this.isAnonymous()){
+            return;
+        }
+        final VisitedPage currentPage = VisitedPage.getPage(path, title);
+
+        List <VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
+
+        if (cachedPages == null) {
+            cachedPages = new ArrayList<>();
+        }
+
+        if(cachedPages.contains(currentPage)){
+            cachedPages.remove(currentPage);
+        }
+        cachedPages.add(0, currentPage); //for page ordering
+
+        if(cachedPages.size() > MAX_VISITED_PAGE_SIZE){
+            cachedPages.remove(MAX_VISITED_PAGE_SIZE -1);
+        }
+        Promise.promise(
+            new Function0<Void>() {
+                public Void apply() throws IllegalAccessException, InstantiationException {
+                    if(visitedPages.contains(currentPage)) {
+                        VisitedPage oldPage = visitedPages.get(visitedPages.indexOf(currentPage));
+                        oldPage.delete();
+                        visitedPages.remove(oldPage);
+                    }
+                    visitedPages.add(currentPage);
+                    if(visitedPages.size() > MAX_VISITED_PAGE_SIZE) {
+                        visitedPages.remove( MAX_VISITED_PAGE_SIZE -1);
+                    }
+                    save();
+                    return Void.TYPE.newInstance();
+                }
+            }
+        );
+    }
+
+    public void removeVisitPageByPath(String path){
+        List <VisitedPage> pages = (List<VisitedPage>) Cache.get(this.loginId);
+
+        if(pages == null || pages.size() ==0){
+            return;
+        }
+
+        for(VisitedPage page: pages){
+            if(page.path.equalsIgnoreCase(path)){
+                pages.remove(page);
+                page.delete();
+                return;
+            }
+        }
+    }
+
+    public void removeVisitPage(String path, String title){
+        final VisitedPage currentPage = VisitedPage.getPage(path, title);
+        List <VisitedPage> cachedPages = (List<VisitedPage>) Cache.get(this.loginId);
+
+        if (cachedPages == null) {
+            cachedPages = new ArrayList<>();
+        }
+
+        if(cachedPages.contains(currentPage)){
+            cachedPages.remove(currentPage);
+        }
+
+        Promise.promise(
+                new Function0<Void>() {
+                    public Void apply() throws IllegalAccessException, InstantiationException {
+                        if(visitedPages.contains(currentPage)) {
+                            VisitedPage oldPage = visitedPages.get(visitedPages.indexOf(currentPage));
+                            oldPage.delete();
+                            visitedPages.remove(oldPage);
+                        }
+                        return Void.TYPE.newInstance();
+                    }
+                }
+        );
     }
 }

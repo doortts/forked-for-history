@@ -844,6 +844,7 @@ title.projectMembers = 프로젝트 멤버
 title.projectSetting = 프로젝트 설정
 title.projectTransfer = 프로젝트 이관
 title.recently.visited =  최근 방문
+title.recentlyVisitedPage = 최근 방문 페이지
 title.rememberMe = 로그인 유지하기
 title.resetPassword = 비밀번호 재설정
 title.resetPasswordFor = <span class="highlight">{0}</span> 비밀번호 재설정
@@ -852,6 +853,7 @@ title.sendMail = 메일 발송
 title.signup = 회원 가입
 title.signupFor = <span class="highlight">{0}</span> 회원가입
 title.siteSetting = 사이트 설정
+title.shortcut = 단축키
 title.text = 제목
 title.unlimitedProjects = 제한 없는 프로젝트 생성
 title.watching = 지켜보는

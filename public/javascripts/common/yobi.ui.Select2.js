@@ -42,6 +42,25 @@
 
         // Customized formats
         var formatters = {
+            "projects": function(itemObject){
+                var itemElement = $(itemObject.element);
+                var avatarURL = itemElement.data("avatarUrl");
+
+                function _doesntHaveProjectAvatar() {
+                    return !avatarURL || avatarURL.indexOf("project_default_logo.png") !== -1;
+                }
+
+                if(_doesntHaveProjectAvatar()){
+                    return $yobi.tmpl($("#tplSelect2ProjectsWithoutAvatar").text(), {
+                        "name"     : itemObject.text
+                    });
+                } else {
+                    return $yobi.tmpl($("#tplSelect2Projects").text(), {
+                        "avatarURL": avatarURL,
+                        "name"     : itemObject.text.trim()
+                    });
+                }
+            },
             "user": function(itemObject){
                 var itemElement = $(itemObject.element);
                 var avatarURL = itemElement.data("avatarUrl");
@@ -221,9 +240,9 @@
 
         // Use customized format if specified format exists
         var formatName = targetElement.data("format");
-        var formatter = formatName ? formatters[formatName.toLowerCase()] : null;
-        var matcher   = formatName ? matchers[formatName.toLowerCase()]   : null;
-        var behavior  = formatName ? behaviors[formatName.toLowerCase()]  : null;
+        var formatter = formatName ? formatters[formatName] : null;
+        var matcher   = formatName ? matchers[formatName]   : null;
+        var behavior  = formatName ? behaviors[formatName]  : null;
 
         if(typeof formatter === "function"){
             select2Option = $.extend(select2Option, {

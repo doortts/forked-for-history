@@ -6204,3 +6204,40 @@ div.diff-body[data-outdated="true"] tr:hover .icon-comment {
   vertical-align: middle;
 }
 
+#search > #s2id_projects {
+  margin-top: 10px;
+}
+
+.group-project-name {
+  font-size: 12px;
+  font-weight: bold;
+  color:#3592b5;
+}
+
+.small-font-family {
+  font-family: @fixed-font-family
+}
+
+.transparent-bg{
+  border: 1px solid rgba(0,0,0,.15);
+  text-align :center;
+  white-space:nowrap;
+  text-shadow:none;
+  .border-radius(3px)  !important;
+  display:inline-block;
+  padding: 4px 12px !important;
+  vertical-align: middle;
+  cursor: pointer;
+  line-height: 20px;
+  font-size: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #7c7c7c;
+
+  &:hover, &:focus, &:active, &:focus, &.disabled, &[disabled]  {
+    border:1px solid rgba(0,0,0,.25);
+    background-color: rgba(255, 255, 255, 0.15);
+    text-decoration:none;
+    color: #ddd;
+  }
+}
+
