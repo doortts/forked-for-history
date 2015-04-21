@@ -21,6 +21,7 @@
 package models;
 
 import com.avaje.ebean.*;
+import controllers.Application;
 import controllers.UserApp;
 import models.enumeration.ResourceType;
 import models.enumeration.RoleType;
@@ -185,6 +186,7 @@ public class User extends Model implements ResourceConvertible {
     public List<OrganizationUser> organizationUsers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OrderBy("lastVisitedTime DESC")
     public List<UserVisitedPage> userVisitedPages;
 
     public User() {
@@ -800,7 +802,8 @@ public class User extends Model implements ResourceConvertible {
     public static List<UserVisitedPage> getRecentlyVisitedPages(User user){
         play.Logger.debug("--- global cache ---\n" + VisitedPage.globalPageMap.keySet().toString());
         play.Logger.debug("--- user cache --- " + UserApp.currentUser().loginId + " \n");
-        if(existUserInUserCache()){
+
+        if(Application.isDevMode && existUserInUserCache()){
             for(UserVisitedPage page: (List<UserVisitedPage>) Cache.get(UserApp.currentUser().loginId)){
                 if(page.visitedPage.lastCommentAddedTime == null){
                     play.Logger.debug(page.visitedPage.path + ": " +page.lastVisitedTime);
@@ -813,8 +816,7 @@ public class User extends Model implements ResourceConvertible {
         List<UserVisitedPage> cachedPages = (List<UserVisitedPage>) Cache.get(UserApp.currentUser().loginId);
         if (cachedPages == null) { // cache is reset or first time using cache
             if(user.userVisitedPages.size() > 0){ // user history exists in db
-                cachedPages = new ArrayList<>(user.userVisitedPages);
-                Collections.reverse(cachedPages);
+                cachedPages = new ArrayList<>(UserVisitedPage.getOrderByVisitedDate(user));
                 updateGlobalCache(cachedPages);
             } else {
                 cachedPages = new ArrayList<>();
@@ -865,9 +867,8 @@ public class User extends Model implements ResourceConvertible {
         }
 
         UserVisitedPage userVisitedPage = getCurrentPageFromCache(path, title);
-        VisitedPage page = null;
         if(userVisitedPage == null){  // 1st cache (user cache) fail
-            page = VisitedPage.getPageFromGlobalCache(path);
+            VisitedPage page = VisitedPage.getPageFromGlobalCache(path);
             if(page == null){ // 2nd cache (global cache) fail
                 page = VisitedPage.findPageByPath(path); // search from db
                 if(page == null) {  // not found from db
@@ -881,8 +882,6 @@ public class User extends Model implements ResourceConvertible {
                 userCache.remove(userVisitedPage); //for ordering
             }
             userCache.add(0, userVisitedPage); //for ordering
-        } else {
-            page = userVisitedPage.visitedPage;
         }
 
         userVisitedPage.lastVisitedTime = DateTime.now().getMillis();
@@ -896,11 +895,11 @@ public class User extends Model implements ResourceConvertible {
         Promise.promise(
                 new Function0<Void>() {
                     public Void apply() throws IllegalAccessException, InstantiationException {
-                        try{
-                            if(userVisitedPages.contains(userVisitedPageForDB)) {
+                        try {
+                            if (userVisitedPages.contains(userVisitedPageForDB)) {
                                 UserVisitedPage old = userVisitedPages.get(userVisitedPages.indexOf(userVisitedPageForDB));
                                 userVisitedPages.remove(old);
-                                userVisitedPages.add(0, old);
+                                userVisitedPages.add(old);
                                 old.lastVisitedTime = userVisitedPageForDB.lastVisitedTime;
                                 old.visitedPage.lastCommentAddedTime = lastCommentAddedTime;
                                 old.visitedPage.title = title;
@@ -911,15 +910,19 @@ public class User extends Model implements ResourceConvertible {
                                 userVisitedPageForDB.visitedPage.save();
                                 userVisitedPageForDB.save();
                             }
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             play.Logger.error("user visited page save failed!", e);
                         }
 
                         // remove old page from history & persistence
-                        if(userVisitedPages.size() > MAX_VISITED_PAGE_SIZE) {
-                            UserVisitedPage page = userVisitedPages.get(MAX_VISITED_PAGE_SIZE - 1);
-                            userVisitedPages.remove(MAX_VISITED_PAGE_SIZE - 1);
-                            page.delete();
+                        if (userVisitedPages.size() > MAX_VISITED_PAGE_SIZE) {
+                            UserVisitedPage page = userVisitedPages.get(0);
+                            userVisitedPages.remove(page);
+                            try{
+                                page.delete();
+                            } catch (Exception e) {
+                                play.Logger.error("overflow page deletion fail..: " + page.getPath(), e);
+                            }
                         }
                         return null;
                     }
@@ -936,7 +939,7 @@ public class User extends Model implements ResourceConvertible {
         }
 
         if(cachedPages.size() > MAX_VISITED_PAGE_SIZE){
-            cachedPages.remove(MAX_VISITED_PAGE_SIZE -1);
+            cachedPages.remove(cachedPages.size()-1);
         }
     }
 
@@ -986,8 +989,10 @@ public class User extends Model implements ResourceConvertible {
                                     current.delete();
                                 }
                             } else {
-                                current.refresh();
-                                current.delete();
+                                if(current.id != null){
+                                    current.refresh();
+                                    current.delete();
+                                }
                                 VisitedPage.globalPageMap.remove(path);
                             }
 

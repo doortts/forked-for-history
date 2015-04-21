@@ -33,6 +33,7 @@ import jsmessages.JsMessages;
 import java.io.File;
 
 public class Application extends Controller {
+    public static final Boolean isDevMode = play.api.Play.isDev(play.api.Play.current());
 
     @AnonymousCheck
     public static Result index() {

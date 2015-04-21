@@ -623,11 +623,8 @@ public class IssueApp extends AbstractPostingApp {
             NotificationEvent.afterNewComment(savedComment);
         }
 
-        VisitedPage globalCachedPage = VisitedPage.getPageFromGlobalCache(request().path().replaceAll("/comments$", ""));
-        if(globalCachedPage != null){
-            globalCachedPage.lastCommentAddedTime = savedComment.createdDate.getTime();
-            globalCachedPage.save();
-        }
+        String path = request().path().replaceAll("/comments$", "");
+        VisitedPage.updateLastCommentAddedTime(path, savedComment.createdDate.getTime());
         return redirect(RouteUtil.getUrl(savedComment));
     }
 

@@ -2,11 +2,14 @@ package models;
 
 import play.data.validation.Constraints.Required;
 import play.db.ebean.Model;
+import play.libs.F;
 
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static play.libs.F.*;
 
 @Entity
 public class VisitedPage extends Model{
@@ -68,5 +71,28 @@ public class VisitedPage extends Model{
             }
         }
         return null;
+    }
+
+    public static void updateLastCommentAddedTime(final String path, final Long lastCommentAddedTime){
+        VisitedPage globalCachedPage = VisitedPage.getPageFromGlobalCache(path);
+        if(globalCachedPage != null){
+            globalCachedPage.lastCommentAddedTime = lastCommentAddedTime;
+        }
+        Promise.promise(
+                new F.Function0<Void>() {
+                    public Void apply() throws IllegalAccessException, InstantiationException {
+                        VisitedPage page = VisitedPage.findPageByPath(path);
+                        if(page != null){
+                            page.lastCommentAddedTime = lastCommentAddedTime;
+                            try{
+                                page.save();
+                            } catch (Exception e){
+                                play.Logger.error("cached page to db saving is fail: " + path);
+                            }
+                        }
+                        return null;
+                    }
+                }
+        );
     }
 }

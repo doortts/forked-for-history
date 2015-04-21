@@ -644,6 +644,9 @@ public class PullRequestApp extends Controller {
 
         NotificationEvent.afterNewComment(UserApp.currentUser(), pullRequest, comment, urlToView);
 
+        String path = request().path().replaceAll("/comments$", "");
+        VisitedPage.updateLastCommentAddedTime(path, pullRequest.lastCommentAddedTime);
+
         return redirect(urlToView);
     }
 

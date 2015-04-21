@@ -4,12 +4,15 @@ import play.db.ebean.Model;
 
 import javax.persistence.*;
 
+import java.util.List;
+
 import static play.data.validation.Constraints.*;
 
 @Entity
 public class UserVisitedPage extends Model {
 
     private static final long serialVersionUID = 1627478585879491228L;
+    private static Finder<Long, UserVisitedPage> finder = new Finder<>(Long.class, UserVisitedPage.class);
 
     @Id
     public Long id;
@@ -58,5 +61,16 @@ public class UserVisitedPage extends Model {
         result = 31 * result + (user != null ? user.hashCode() : 0);
         result = 31 * result + (visitedPage != null ? visitedPage.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public void delete(){
+        if(this.id != null){
+            super.delete();
+        }
+    }
+
+    public static List<UserVisitedPage> getOrderByVisitedDate(User user){
+        return finder.where().eq("user.id", user.id).order("lastVisitedTime desc").findList();
     }
 }

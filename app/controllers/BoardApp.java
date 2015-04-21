@@ -309,6 +309,9 @@ public class BoardApp extends AbstractPostingApp {
             NotificationEvent.afterNewComment(savedComment);
         }
 
+        String path = request().path().replaceAll("/comment/new$", "");
+        VisitedPage.updateLastCommentAddedTime(path, savedComment.createdDate.getTime());
+
         return redirect(RouteUtil.getUrl(savedComment));
     }
 
