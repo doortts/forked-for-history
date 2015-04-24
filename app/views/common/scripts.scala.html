@@ -186,5 +186,12 @@
         });
 
         yobi.OriginalMessage.hide($("[data-via-email]"));
+
+        // Hide other elements when global search box is focused
+        $(".search-box > input[name='keyword']").focus(function(){
+            $("#goto-recently-container").hide();
+        }).blur(function(){
+            $("#goto-recently-container").show(200);
+        });
     });
 </script>

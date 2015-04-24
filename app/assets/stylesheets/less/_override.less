@@ -112,12 +112,17 @@
     .avatar-wrap { margin-top:0; }
 
     .select2-highlighted {
-        background: #4E5051;
+        background: #27abe1;
+        opacity: 1;
         color: #fff;
 
         .loginid { color:#fff; }
         p {
           color: #ddd !important;
+        }
+
+        .darkgray-txt {
+            color: #fff !important;
         }
     }
 
@@ -370,19 +375,21 @@ li.select2-result-with-children:first-of-type {
 .tooltip.right.in {
   padding: 0px 0px;
   font-family: @fixed-font-family;
-  background-color: #27abe1;
+  background-color: #A0C04A;
   margin-top: 2px;
   z-index: 999;
 }
 
 .tooltip.right.in > .tooltip-inner {
   max-width: 400px;
-  background-color: #27abe1;
+  background-color: #A0C04A;
   margin-left: 8px;
   line-height: 1.1;
   z-index: 999;
+  border: 1px solid #91ae44;
+  border-radius: 0;
 }
-.tooltip.right.in > .tooltip-arrow {border-right-color: #27abe1;}
+.tooltip.right.in > .tooltip-arrow {border-right-color: #A0C04A;}
 
 .select2-results {
     -ms-overflow-style: -ms-autohiding-scrollbar;
