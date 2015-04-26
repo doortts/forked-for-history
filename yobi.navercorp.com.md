@@ -114,6 +114,49 @@ IMAP 설치방법을 보고 /etc/dovecot/conf.d/10-auth.conf에서 auth-password
 
 IMAP 설치방법을 보고 /etc/dovecot/conf.d/10-mail.conf 에 mail_location을 설정한다.
 
+#### java.io.IOException: 기호 연결의 단계가 너무 많음
+
+stage 중에 다음과 같은 에러가 발생한다면,
+
+java.io.IOException: 기호 연결의 단계가 너무 많음
+    at java.io.UnixFileSystem.canonicalize0(Native Method)
+    at java.io.UnixFileSystem.canonicalize(UnixFileSystem.java:172)
+    at java.io.File.getCanonicalPath(File.java:589)
+    at play.PlaySettings$$anonfun$defaultSettings$75$$anonfun$apply$5.apply(PlaySettings.scala:288)
+    at play.PlaySettings$$anonfun$defaultSettings$75$$anonfun$apply$5.apply(PlaySettings.scala:287)
+    at scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:244)
+    at scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:244)
+    at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)
+    at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)
+    at scala.collection.TraversableLike$class.map(TraversableLike.scala:244)
+    at scala.collection.AbstractTraversable.map(Traversable.scala:105)
+    at play.PlaySettings$$anonfun$defaultSettings$75.apply(PlaySettings.scala:286)
+    at play.PlaySettings$$anonfun$defaultSettings$75.apply(PlaySettings.scala:283)
+    at scala.Function1$$anonfun$compose$1.apply(Function1.scala:47)
+    at sbt.$tilde$greater$$anonfun$$u2219$1.apply(TypeFunctions.scala:42)
+    at sbt.std.Transform$$anon$4.work(System.scala:64)
+    at sbt.Execute$$anonfun$submit$1$$anonfun$apply$1.apply(Execute.scala:237)
+    at sbt.Execute$$anonfun$submit$1$$anonfun$apply$1.apply(Execute.scala:237)
+    at sbt.ErrorHandling$.wideConvert(ErrorHandling.scala:18)
+    at sbt.Execute.work(Execute.scala:244)
+    at sbt.Execute$$anonfun$submit$1.apply(Execute.scala:237)
+    at sbt.Execute$$anonfun$submit$1.apply(Execute.scala:237)
+    at sbt.ConcurrentRestrictions$$anon$4$$anonfun$1.apply(ConcurrentRestrictions.scala:160)
+    at sbt.CompletionService$$anon$2.call(CompletionService.scala:30)
+    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+    at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+    at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+    at java.lang.Thread.run(Thread.java:724)
+
+어디엔가 자신을 참조하는 symlink가 있을 것이다. 예를 들어
+/data/yobi/conf/conf/... 같은 symlink가 생겨나있을 수 있다.
+
+그것을 삭제하고 다시 해본다. (예: `rm /data/yobi/conf/conf`)
+
 ## 디렉토리 정보
 
 * Apache: /home1/irteam/apps/apache
