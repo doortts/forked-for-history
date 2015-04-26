@@ -5,7 +5,10 @@
 ## Yobi 재시작
 
     kill `cat /data/yobi/RUNNING_PID`
+    java -cp ~/.ivy2/cache/com.h2database/h2/jars/h2-1.4.184.jar org.h2.tools.Shell -user "" -password "" -url "jdbc:h2:file:./nforge;CACHE_SIZE=131072;MODE=PostgreSQL;TRACE_LEVEL_FILE=3;LOCK_TIMEOUT=200;MVCC=FALSE;MV_STORE=FALSE;LOCK_MODE=0;AUTO_SERVER=TRUE" -sql "shutdown compact"
     _JAVA_OPTIONS="-Xmx12g -Xms4g -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:gc.log -XX:PermSize=256m -XX:MaxPermSize=256m" nohup /data/yobi/bin/yobi -Dyobi.home=/data/yobi-data -DapplyEvolutions.default=true -DapplyDownEvolutions.default=true -Dhttp.port=9000 3>&1 1>&2 2>&3 | tee -a /data/yobi/logs/stderr &
+
+주의: 데이터베이스 크기에 따라 kill 혹은 shutdown compact 과정에서 굉장히 많은 시간이 걸릴 수 있다. 예를 들어 데이터베이스 크기가 5GB일 때 70분 정도 걸릴 수 있다.
 
 ## Yobi 업그레이드
 
