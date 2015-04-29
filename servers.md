@@ -43,6 +43,12 @@
 호스트이름: test-yobi-star.ncl
 담당자: 김창성
 
+Yobi를 재시작 할 때는, 다음과 같이 /home1/irteamsu/repos/yobi 에서 root
+권한으로 restart.sh를 실행한다.
+
+    cd /home1/irteamsu/repos/yobi
+    sudo ./restart.sh
+
 ### yobi.d2fest.kr
 
 Alias: repo.yobi.io (Yobi 최신 버전 확인용 서버로 활용하려고 하는데 d2fest인건 좀 이상해서)
