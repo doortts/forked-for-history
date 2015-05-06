@@ -19,6 +19,7 @@
 * limitations under the License.
 **@
 @()
+@import models.User
 @import utils.TemplateHelper._
 @isUpdated(page: UserVisitedPage) = @{
     val vp = VisitedPage.getPageFromGlobalCache(page.visitedPage.path)
@@ -53,7 +54,7 @@
                   }
                 </optgroup>
                 <optgroup label="@Messages("title.recentlyVisitedPage") (@Messages("title.shortcut"): / , @Messages("title.new.commented.page.only"): // )">
-                  @for(page <- User.getRecentlyVisitedPages(UserApp.currentUser())){
+                  @for(page <- User.getRecentlyVisitedPages()){
                       <option value="@page.getPath" data-path="@page.getPath" data-author="@page.getTitle.substring(page.getTitle.lastIndexOf("#")+1)" title="@page.getPath" data-is-updated="@isUpdated(page)">@page.getTitle.substring(0, page.getTitle.lastIndexOf("#"))</option>
                   }
                 </optgroup>

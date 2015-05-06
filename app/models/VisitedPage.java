@@ -8,6 +8,7 @@ import javax.persistence.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static play.libs.F.*;
 
@@ -31,7 +32,7 @@ public class VisitedPage extends Model{
     public List<UserVisitedPage> userVisitedPages;
 
     @Transient
-    public static final Map<String, VisitedPage> globalPageMap = new HashMap<>();
+    public static final ConcurrentHashMap<String, VisitedPage> globalPageMap = new ConcurrentHashMap<>();
 
     public VisitedPage(String path, String title, Long lastCommentAddedTime){
         this.path = path;
@@ -94,5 +95,10 @@ public class VisitedPage extends Model{
                     }
                 }
         );
+    }
+
+    public void updatePage(String title, Long lastCommentAddedTime) {
+        this.lastCommentAddedTime = lastCommentAddedTime;
+        this.title = title;
     }
 }

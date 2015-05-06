@@ -261,7 +261,7 @@ public class BoardApp extends AbstractPostingApp {
         Posting posting = Posting.findByNumber(project, number);
         Call redirectTo = routes.BoardApp.posts(project.owner, project.name, 1);
 
-        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(posting), posting.getLastCommentAddedTime());
+        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""));
 
         return delete(posting, posting.asResource(), redirectTo);
     }

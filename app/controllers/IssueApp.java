@@ -218,7 +218,7 @@ public class IssueApp extends AbstractPostingApp {
                 result.put("body", Messages.get("error.notfound.issue_post"));
                 return ok(result);
             } else {
-                UserApp.currentUser().removeVisitPageFromCacheByPath(request().path());
+                PageCache.removeVisitPageFromCacheByPath(request().path());
                 return notFound(ErrorViews.NotFound.render("error.notfound", project, ResourceType.ISSUE_POST.resource()));
             }
         }
@@ -568,7 +568,7 @@ public class IssueApp extends AbstractPostingApp {
         Call redirectTo =
             routes.IssueApp.issues(project.owner, project.name, State.OPEN.state(), "html", 1);
 
-        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""), pageTitle(issue), issue.getLastCommentAddedTime());
+        UserApp.currentUser().removeVisitPage(request().path().replace("/delete",""));
 
         return delete(issue, issue.asResource(), redirectTo);
     }

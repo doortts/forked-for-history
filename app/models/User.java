@@ -31,7 +31,6 @@ import models.resource.Resource;
 import models.resource.ResourceConvertible;
 import models.support.UserComparator;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.crypto.hash.Sha256Hash;
 import org.apache.shiro.util.ByteSource;
 import org.joda.time.DateTime;
@@ -51,7 +50,6 @@ import javax.persistence.*;
 import javax.persistence.OrderBy;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import play.cache.Cache;
 
 @Table(name = "n4user")
 @Entity
@@ -78,7 +76,6 @@ public class User extends Model implements ResourceConvertible {
     public static final String LOGIN_ID_PATTERN_ALLOW_FORWARD_SLASH = "[a-zA-Z0-9-/]+([_.][a-zA-Z0-9-/]+)*";
 
     public static final User anonymous = new NullUser();
-    private static final int MAX_VISITED_PAGE_SIZE = 100;
 
     @Id
     public Long id;
@@ -798,66 +795,36 @@ public class User extends Model implements ResourceConvertible {
         return result;
     }
 
+
     @SuppressWarnings("unchecked")
-    public static List<UserVisitedPage> getRecentlyVisitedPages(User user){
+    public static List<UserVisitedPage> getRecentlyVisitedPages(){
         play.Logger.debug("--- global cache ---\n" + VisitedPage.globalPageMap.keySet().toString());
         play.Logger.debug("--- user cache --- " + UserApp.currentUser().loginId + " \n");
 
-        if(Application.isDevMode && existUserInUserCache()){
-            for(UserVisitedPage page: (List<UserVisitedPage>) Cache.get(UserApp.currentUser().loginId)){
+        if(Application.isDevMode && PageCache.existUserInUserCache()){
+            for(UserVisitedPage page: PageCache.getUserVisitedPages()){
                 if(page.visitedPage.lastCommentAddedTime == null){
                     play.Logger.debug(page.visitedPage.path + ": " +page.lastVisitedTime);
                 } else {
-                    play.Logger.debug(page.visitedPage.path + ": " + (page.lastVisitedTime - page.visitedPage.lastCommentAddedTime) + "/" + new DateTime(page.lastVisitedTime) + "::" + new DateTime(page.visitedPage.lastCommentAddedTime));
+                    play.Logger.debug(page.visitedPage.path + ": "
+                        + (page.lastVisitedTime - page.visitedPage.lastCommentAddedTime)
+                        + "/" + new DateTime(page.lastVisitedTime)
+                        + "::" + new DateTime(page.visitedPage.lastCommentAddedTime));
                 }
             }
         }
 
-        List<UserVisitedPage> cachedPages = (List<UserVisitedPage>) Cache.get(UserApp.currentUser().loginId);
+        List<UserVisitedPage> cachedPages = PageCache.getUserVisitedPages();
         if (cachedPages == null) { // cache is reset or first time using cache
-            if(user.userVisitedPages.size() > 0){ // user history exists in db
-                cachedPages = new ArrayList<>(UserVisitedPage.getOrderByVisitedDate(user));
-                updateGlobalCache(cachedPages);
+            if(PageCache.existsPageHistoryInDB()){
+                cachedPages = new ArrayList<>(UserVisitedPage.getOrderByVisitedDate());
+                PageCache.updateGlobalCache(cachedPages);
             } else {
                 cachedPages = new ArrayList<>();
             }
-            Cache.set(user.loginId, cachedPages);
+            play.cache.Cache.set(UserApp.currentUser().loginId, cachedPages);
         }
         return cachedPages;
-    }
-
-    private static void updateGlobalCache(List<UserVisitedPage> cachedPages) {
-        for(UserVisitedPage page: cachedPages){
-            if( !VisitedPage.globalPageMap.containsKey(page.getPath()) ){
-                VisitedPage.globalPageMap.put(page.getPath(), page.visitedPage);
-            }
-        }
-    }
-
-    private static boolean existUserInUserCache() {
-        return Cache.get(UserApp.currentUser().loginId) != null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private UserVisitedPage getCurrentPageFromCache(String path, String title){
-        List <UserVisitedPage> cachedPages = (List<UserVisitedPage>) Cache.get(this.loginId);
-
-        if (cachedPages == null) {
-            return null;
-        }
-
-        for(UserVisitedPage page: cachedPages){
-            if(page.getPath().equalsIgnoreCase(path)){   // cache hit
-                UserVisitedPage currentPageAtCache = page;
-
-                cachedPages.remove(currentPageAtCache);    // for ordering
-                currentPageAtCache.setTitle(title);        // title may be updated
-                cachedPages.add(0, currentPageAtCache);    // for ordering
-                return currentPageAtCache;
-            }
-        }
-
-        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -866,7 +833,7 @@ public class User extends Model implements ResourceConvertible {
             return;
         }
 
-        UserVisitedPage userVisitedPage = getCurrentPageFromCache(path, title);
+        UserVisitedPage userVisitedPage = PageCache.getCurrentPage(path, title);
         if(userVisitedPage == null){  // 1st cache (user cache) fail
             VisitedPage page = VisitedPage.getPageFromGlobalCache(path);
             if(page == null){ // 2nd cache (global cache) fail
@@ -874,21 +841,15 @@ public class User extends Model implements ResourceConvertible {
                 if(page == null) {  // not found from db
                     page = new VisitedPage(path, title, lastCommentAddedTime);
                 }
-                VisitedPage.globalPageMap.put(path, page);
+                VisitedPage.globalPageMap.putIfAbsent(path, page);
             }
             userVisitedPage = new UserVisitedPage(this, page, DateTime.now().getMillis());
-            List<UserVisitedPage> userCache = getRecentlyVisitedPages(this);
-            if (userCache.contains(userVisitedPage)){
-                userCache.remove(userVisitedPage); //for ordering
-            }
-            userCache.add(0, userVisitedPage); //for ordering
+            userVisitedPage.updateUserVisitedPagesOrder();
         }
 
-        userVisitedPage.lastVisitedTime = DateTime.now().getMillis();
-        userVisitedPage.visitedPage.lastCommentAddedTime = lastCommentAddedTime;
-        userVisitedPage.visitedPage.title = title;
+        userVisitedPage.updateUserVisitedPage(title, lastCommentAddedTime);
 
-        deleteOldPageFromCache();
+        PageCache.deleteOldPage();
 
         //add visited page history from persistence(DB) & global map
         final UserVisitedPage userVisitedPageForDB = userVisitedPage;
@@ -898,15 +859,12 @@ public class User extends Model implements ResourceConvertible {
                         try {
                             if (userVisitedPages.contains(userVisitedPageForDB)) {
                                 UserVisitedPage old = userVisitedPages.get(userVisitedPages.indexOf(userVisitedPageForDB));
-                                userVisitedPages.remove(old);
-                                userVisitedPages.add(old);
                                 old.lastVisitedTime = userVisitedPageForDB.lastVisitedTime;
-                                old.visitedPage.lastCommentAddedTime = lastCommentAddedTime;
-                                old.visitedPage.title = title;
+                                old.visitedPage.updatePage(title, lastCommentAddedTime);
                                 old.visitedPage.save();
                                 old.save();
                             } else {
-                                userVisitedPageForDB.visitedPage.lastCommentAddedTime = lastCommentAddedTime;
+                                userVisitedPageForDB.visitedPage.updatePage(title, lastCommentAddedTime);
                                 userVisitedPageForDB.visitedPage.save();
                                 userVisitedPageForDB.save();
                             }
@@ -914,62 +872,32 @@ public class User extends Model implements ResourceConvertible {
                             play.Logger.error("user visited page save failed!", e);
                         }
 
-                        // remove old page from history & persistence
-                        if (userVisitedPages.size() > MAX_VISITED_PAGE_SIZE) {
-                            UserVisitedPage page = userVisitedPages.get(0);
-                            userVisitedPages.remove(page);
-                            try{
+                        removeOldPageFromHistoryAndPersistence();
+                        return null;
+                    }
+
+                    private void removeOldPageFromHistoryAndPersistence() {
+                        if (userVisitedPages.size() > PageCache.MAX_VISITED_PAGE_SIZE) {
+                            UserVisitedPage page = userVisitedPages.remove(0);
+                            try {
                                 page.delete();
                             } catch (Exception e) {
                                 play.Logger.error("overflow page deletion fail..: " + page.getPath(), e);
                             }
                         }
-                        return null;
                     }
                 }
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private void deleteOldPageFromCache() {
-        List<UserVisitedPage> cachedPages = (List<UserVisitedPage>) Cache.get(this.loginId);
-
-        if(cachedPages == null){
-            return;
-        }
-
-        if(cachedPages.size() > MAX_VISITED_PAGE_SIZE){
-            cachedPages.remove(cachedPages.size()-1);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void removeVisitPageFromCacheByPath(String path){
-        List <UserVisitedPage> pages = (List<UserVisitedPage>) Cache.get(this.loginId);
-
-        if(pages == null || pages.size() == 0){
-            return;
-        }
-
-        UserVisitedPage forRemove = null;
-        for(UserVisitedPage page: pages){
-            if(page.getPath().equalsIgnoreCase(path)){
-                VisitedPage.globalPageMap.remove(path);
-                forRemove = page;
-            }
-        }
-        pages.remove(forRemove);
-    }
-
-    @SuppressWarnings("unchecked")
-    public void removeVisitPage(final String path, final String title, final Long lastCommentAddedTime){
-        List <UserVisitedPage> cachedPages = (List<UserVisitedPage>) Cache.get(this.loginId);
+    public void removeVisitPage(final String path){
+        List <UserVisitedPage> cachedPages = PageCache.getUserVisitedPages();
 
         if (cachedPages != null){
             UserVisitedPage currentPage = null;
-            for(UserVisitedPage page: cachedPages){
-                if(page.getPath().equalsIgnoreCase(path)){
-                    currentPage = page;
+            for(UserVisitedPage cachedPage: cachedPages){
+                if(cachedPage.hasSamePath(path)){
+                    currentPage = cachedPage;
                 }
             }
             cachedPages.remove(currentPage);
@@ -989,21 +917,24 @@ public class User extends Model implements ResourceConvertible {
                                     current.delete();
                                 }
                             } else {
-                                if(current.id != null){
+                                if(current.id != null){ // found in cache & persisted
                                     current.refresh();
                                     current.delete();
                                 }
                                 VisitedPage.globalPageMap.remove(path);
                             }
-
-                            UserVisitedPage userPage = current.getUserVisitedPage(UserApp.currentUser());
-                            if(userVisitedPages.contains(userPage)){
-                                userVisitedPages.remove(userPage);
-                            }
+                            removePageFromUserVisitedPages(current);
                         } catch (Exception e){
                             play.Logger.error("Visited page history delete failed! ", e);
                         }
                         return null;
+                    }
+
+                    private void removePageFromUserVisitedPages(VisitedPage current) {
+                        UserVisitedPage userPage = current.getUserVisitedPage(UserApp.currentUser());
+                        if(userVisitedPages.contains(userPage)){
+                            userVisitedPages.remove(userPage);
+                        }
                     }
                 }
         );

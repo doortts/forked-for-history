@@ -1,5 +1,7 @@
 package models;
 
+import controllers.UserApp;
+import org.joda.time.DateTime;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
@@ -70,7 +72,27 @@ public class UserVisitedPage extends Model {
         }
     }
 
-    public static List<UserVisitedPage> getOrderByVisitedDate(User user){
-        return finder.where().eq("user.id", user.id).order("lastVisitedTime desc").findList();
+    public static List<UserVisitedPage> getOrderByVisitedDate(){
+        return finder.where().eq("user.id", UserApp.currentUser().id).order("lastVisitedTime desc").findList();
+    }
+
+    public void updateUserVisitedPage(String title, Long lastCommentAddedTime) {
+        lastVisitedTime = DateTime.now().getMillis();
+        visitedPage.updatePage(title, lastCommentAddedTime);
+    }
+
+    /**
+     * move current page to the top of recently visited page list
+     */
+    public void updateUserVisitedPagesOrder() {
+        List<UserVisitedPage> userCache = User.getRecentlyVisitedPages();
+        if (userCache.contains(this)){
+            userCache.remove(this); //for ordering
+        }
+        userCache.add(0, this); //for ordering
+    }
+
+    public boolean hasSamePath(String path){
+        return getPath().equalsIgnoreCase(path);
     }
 }
