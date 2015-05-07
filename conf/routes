@@ -69,6 +69,7 @@ POST           /user/email/sendValidationEmail/:emailId                         
 GET            /user/email/confirm/:emailId/:token                                    controllers.UserApp.confirmEmail(emailId: Long, token: String)
 
 GET            /user/recently                                                         controllers.UserApp.goToRecentlyView()
+GET            /user/existsRecentlyAddedComments                                      controllers.UserApp.existsRecentlyAddedComments()
 GET            /user/goto                                                             controllers.UserApp.goToRecently()
 
 # Site
@@ -205,6 +206,7 @@ GET            /:ownerName/:project/closedPullRequests                          
 GET            /:ownerName/:project/sentPullRequests                                  controllers.PullRequestApp.sentPullRequests(ownerName, project)
 GET            /:ownerName/:project/pullRequest/:id                                   controllers.PullRequestApp.pullRequest(ownerName, project, id: Long)
 GET            /:ownerName/:project/pullRequest/:id/changes                           controllers.PullRequestApp.pullRequestChanges(ownerName, project, id: Long)
+GET            /:ownerName/:project/pullRequest/:id/lastComment                       controllers.PullRequestApp.pullRequestLastCommentPath(ownerName, project, id: Long)
 GET            /:ownerName/:project/pullRequest/:id/changes/:commitId                 controllers.PullRequestApp.specificChange(ownerName, project, id: Long, commitId: String)
 GET            /:ownerName/:project/pullRequest/:id/state                             controllers.PullRequestApp.pullRequestState(ownerName, project, id: Long)
 GET            /:ownerName/:project/newPullRequestForm                                controllers.PullRequestApp.newPullRequestForm(ownerName:String, project:String)

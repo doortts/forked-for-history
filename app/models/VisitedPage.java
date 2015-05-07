@@ -26,7 +26,7 @@ public class VisitedPage extends Model{
 
     @Required
     public String title;
-    public Long lastCommentAddedTime;
+    public Long lastCommentAddedTime = 0L;
 
     @OneToMany(mappedBy = "visitedPage", cascade = CascadeType.ALL)
     public List<UserVisitedPage> userVisitedPages;

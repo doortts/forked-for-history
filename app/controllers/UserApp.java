@@ -946,4 +946,18 @@ public class UserApp extends Controller {
         return ok(views.html.common.goToRecentlyjson.render());
     }
 
+    public static Result existsRecentlyAddedComments(){
+        response().setContentType("application/json;charset=UTF-8");
+        ObjectNode json = Json.newObject();
+        List<UserVisitedPage> pages = UserApp.currentUser().userVisitedPages;
+        for(UserVisitedPage page: pages){
+            if(page.lastVisitedTime < page.visitedPage.lastCommentAddedTime){
+                json.put("newComments", true);
+                return ok(json);
+            }
+        }
+        json.put("newComments", false);
+        return ok(json);
+    }
+
 }

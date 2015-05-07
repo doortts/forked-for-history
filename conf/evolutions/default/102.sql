@@ -19,6 +19,7 @@ CREATE TABLE user_visited_page (
 ;
 
 ALTER TABLE pull_request ADD COLUMN last_comment_added_time BIGINT;
+ALTER TABLE pull_request ADD COLUMN last_comment_path VARCHAR(255);
 
 CREATE SEQUENCE visited_page_seq;
 CREATE SEQUENCE user_visited_page_seq;
@@ -38,3 +39,4 @@ DROP INDEX IF EXISTS ix_uinque_user_visited_page_01;
 DROP INDEX IF EXISTS ix_user_visited_page_01;
 
 ALTER TABLE pull_request DROP COLUMN IF EXISTS last_comment_added_time;
+ALTER TABLE pull_request DROP COLUMN IF EXISTS last_comment_path;

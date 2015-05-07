@@ -380,6 +380,15 @@ public class PullRequestApp extends Controller {
     }
 
     @IsAllowed(value = Operation.READ, resourceType = ResourceType.PULL_REQUEST)
+    public static Result pullRequestLastCommentPath(String userName, String projectName,
+                                            long pullRequestNumber) {
+        Project project = Project.findByOwnerAndProjectName(userName, projectName);
+        PullRequest pullRequest = PullRequest.findOne(project, pullRequestNumber);
+        return redirect(routes.PullRequestApp.pullRequestChanges(userName, projectName, pullRequestNumber).toString()
+            + "/" + pullRequest.lastCommentPath);
+    }
+
+    @IsAllowed(value = Operation.READ, resourceType = ResourceType.PULL_REQUEST)
     public static Result specificChange(String userName, String projectName,
                                             long pullRequestNumber, String commitId) {
         Project project = Project.findByOwnerAndProjectName(userName, projectName);
@@ -627,7 +636,12 @@ public class PullRequestApp extends Controller {
             comment.thread = CommentThread.find.byId(comment.thread.id);
         }
         comment.save();
-        pullRequest.lastCommentAddedTime = new Date().getTime();
+        pullRequest.lastCommentAddedTime = comment.createdDate.getTime();
+        if (commitId == null){
+            pullRequest.lastCommentPath = "#comment-" + comment.id;
+        } else {
+            pullRequest.lastCommentPath = commitId + "/#comment-" + comment.id;
+        }
         pullRequest.update();
 
         AbstractPostingApp.attachUploadFilesToPost(comment.asResource());

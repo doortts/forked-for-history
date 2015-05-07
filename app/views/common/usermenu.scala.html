@@ -24,7 +24,7 @@
     @requestHeader.session.get("loginId") match {
       case Some(loginId) => {
 		<li id="goto-recently-container">
-		  <a data-pjax id="goto-link" class="transparent-bg" href="@routes.UserApp.goToRecentlyView()">@Messages("title.recently.visited") (@Messages("title.shortcut"): j)</a>
+		  <a data-pjax id="goto-link" class="transparent-bg" href="@routes.UserApp.goToRecentlyView()">@Messages("title.recently.visited") (@Messages("title.shortcut"): j)</a><div class="new-comments" style="display: none">new</div>
 		</li>
         <li class="gnb-usermenu-item">
           <a href="@routes.Application.index()" class="user-item-btn">@Messages("notification")</a>

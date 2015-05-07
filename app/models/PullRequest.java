@@ -157,6 +157,7 @@ public class PullRequest extends Model implements ResourceConvertible {
     public List<CommentThread> commentThreads = new ArrayList<>();
 
     public Long lastCommentAddedTime = 0L;
+    public String lastCommentPath = "";
 
     @Transient
     private Repository repository;

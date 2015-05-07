@@ -50,6 +50,9 @@
 
     <ul class="comments">
         @for(comment: ReviewComment <- thread.reviewComments) {
+        @if(comment.createdDate == comment.thread.pullRequest.lastCommentAddedTime){
+            <li id="last-comment"></li>
+        }
         <li id="comment-@comment.id" class="comment">
             <div class="comment-avatar">
                 <a href="@routes.UserApp.userInfo(comment.author.loginId)" class="avatar-wrap" data-toggle="tooltip" data-placement="top" title="@comment.author.name">

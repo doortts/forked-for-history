@@ -859,11 +859,15 @@ public class User extends Model implements ResourceConvertible {
                         try {
                             if (userVisitedPages.contains(userVisitedPageForDB)) {
                                 UserVisitedPage old = userVisitedPages.get(userVisitedPages.indexOf(userVisitedPageForDB));
+                                old.refresh();
                                 old.lastVisitedTime = userVisitedPageForDB.lastVisitedTime;
                                 old.visitedPage.updatePage(title, lastCommentAddedTime);
-                                old.visitedPage.save();
-                                old.save();
+                                old.visitedPage.update();
+                                old.update();
                             } else {
+                                if(userVisitedPageForDB.visitedPage.id != null) {
+                                    userVisitedPageForDB.visitedPage.refresh();
+                                }
                                 userVisitedPageForDB.visitedPage.updatePage(title, lastCommentAddedTime);
                                 userVisitedPageForDB.visitedPage.save();
                                 userVisitedPageForDB.save();
