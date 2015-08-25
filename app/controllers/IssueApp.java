@@ -91,7 +91,6 @@ public class IssueApp extends AbstractPostingApp {
         return searchCondition.assigneeId == null && searchCondition.authorId == null && searchCondition.mentionId == null;
     }
 
-    @Transactional
     @IsAllowed(Operation.READ)
     public static Result issues(String ownerName, String projectName, String state, String format, int pageNum) throws WriteException, IOException {
         Project project = Project.findByOwnerAndProjectName(ownerName, projectName);
@@ -206,7 +205,6 @@ public class IssueApp extends AbstractPostingApp {
         return ok(listData);
     }
 
-    @Transactional
     @With(NullProjectCheckAction.class)
     public static Result issue(String ownerName, String projectName, Long number) {
         Project project = Project.findByOwnerAndProjectName(ownerName, projectName);
