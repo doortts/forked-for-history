@@ -9,6 +9,9 @@ GET            /navitest                                                        
 
 # Home page
 GET            /                                                                      controllers.Application.index()
+
+# Migration support page
+GET            /migration                                                             controllers.MigrationApp.migration()
 # Map static resources from the /public folder to the /assets URL path
 GET            /messages.js                                                           controllers.Application.jsMessages()
 GET            /favicon.ico                                                           controllers.Assets.at(path="/public", file="images/favicon.ico")

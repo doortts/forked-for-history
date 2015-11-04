@@ -1,0 +1,45 @@
+@(title: String, projects:List[Project])
+
+@migrationPageLayout(utils.Config.getSiteName)("") {
+    <div>
+        <h2>이관 가능 프로젝트 @projects.size 개</h1>
+        <form class="form-horizontal">
+            <div class="control-group row">
+                <label class="control-label" for="inputEmail">필터</label>
+                <div class="controls">
+                    <input type="text" id="projectName" placeholder="프로젝트 이름">
+                </div>
+            </div>
+            <div class="row">
+                <div class="span8">
+                    <table class="table table-hover migration-list">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Owner</th>
+                                <th>Project Name</th>
+                                <th>Memebers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @for((project, idx) <- projects.zipWithIndex) {
+                            <tr>
+                                <td>
+                                    <label class="checkbox inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="@project.id">@{idx + 1}.
+                                    </label>
+                                </td>
+                                <td>@if( idx != 0 && projects.get(idx-1).owner.equals(project.owner) ) {
+                                } else { @project.owner }</td>
+                                <td class="project-name"><a href="@routes.ProjectApp.project(project.owner, project.name)" target="_blank">@project.name</a></td>
+                                <td>@{project.projectUser.size -1} 명</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="span4">우측메뉴</div>
+            </div>
+        </form>
+    </div>
+}
