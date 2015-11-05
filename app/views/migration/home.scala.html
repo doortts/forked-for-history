@@ -1,9 +1,9 @@
 @(title: String, projects:List[Project])
 
 @migrationPageLayout(utils.Config.getSiteName)("") {
-    <div>
-        <h2>이관 가능 프로젝트 @projects.size 개</h1>
-        <form class="form-horizontal">
+    <div ng-app="yobi.migration">
+        <h3>이관 가능 프로젝트 @projects.size 개</h3>
+        <form class="form-horizontal" ng-controller="MigrationController as vm">
             <div class="control-group row">
                 <label class="control-label" for="inputEmail">필터</label>
                 <div class="controls">
@@ -12,33 +12,42 @@
             </div>
             <div class="row">
                 <div class="span8">
-                    <table class="table table-hover migration-list">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Owner</th>
-                                <th>Project Name</th>
-                                <th>Memebers</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @for((project, idx) <- projects.zipWithIndex) {
-                            <tr>
-                                <td>
-                                    <label class="checkbox inline">
-                                        <input type="checkbox" id="inlineCheckbox1" value="@project.id">@{idx + 1}.
-                                    </label>
-                                </td>
-                                <td>@if( idx != 0 && projects.get(idx-1).owner.equals(project.owner) ) {
-                                } else { @project.owner }</td>
-                                <td class="project-name"><a href="@routes.ProjectApp.project(project.owner, project.name)" target="_blank">@project.name</a></td>
-                                <td>@{project.projectUser.size -1} 명</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+                    <div class="left-project-list">
+                        <table class="table table-hover migration-list">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Owner</th>
+                                    <th>Project Name</th>
+                                    <th>Memebers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @for((project, idx) <- projects.zipWithIndex) {
+                                <tr ng-click="vm.getProject('@project.owner', '@project.name')">
+                                    <td>
+                                        <label class="checkbox inline">
+                                            <input type="checkbox" id="inlineCheckbox1" value="@project.id">@{idx + 1}.
+                                        </label>
+                                    </td>
+                                    <td>@if( idx != 0 && projects.get(idx-1).owner.equals(project.owner) ) {
+                                    } else { @project.owner }</td>
+                                    <td class="project-name"><a href="@routes.ProjectApp.project(project.owner, project.name)" target="_blank">@project.name</a></td>
+                                    <td>@{project.projectUser.size -1} 명</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="span4">우측메뉴</div>
+                <div class="span4">
+                    <dl class="dl-horizontal" ng-cloak>
+                        <dt>소유자</dt><dd>{{vm.project.owner}}</dd>
+                        <dt>프로젝트</dt><dd><strong><h4>{{vm.project.projectName}}</h4></strong></dd>
+                        <dt>멤버목록<span ng-if="vm.project.members">({{vm.project.members.length}})</span></dt>
+                        <dd ng-repeat="member in vm.project.members">{{member.name}} @@{{member.loginId}}</dd>
+                    </dl>
+                </div>
             </div>
         </form>
     </div>
