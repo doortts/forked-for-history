@@ -1,4 +1,4 @@
-@(title: String, projects:List[Project])
+@(title: String, projects:List[Project], code:String, token:String)
 
 @migrationPageLayout(utils.Config.getSiteName)("") {
     <div ng-app="yobi.migration">
@@ -8,10 +8,13 @@
                 <label class="control-label" for="inputEmail">필터</label>
                 <div class="controls">
                     <input type="text" id="projectName" placeholder="프로젝트 이름">
+                    <button class="ybtn ybtn-info" ng-click="vm.redirect()" ng-if="!'@token'" ng-cloak>OSS 접근권한 받기</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.getToken(vm.ownerName)" ng-if="'@token'" ng-cloak>조회</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.postIssue()" ng-if="'@token'" ng-cloak>이슈입력</button>
                 </div>
             </div>
             <div class="row">
-                <div class="span8">
+                <div class="span7">
                     <div class="left-project-list">
                         <table class="table table-hover migration-list">
                             <thead>
@@ -41,14 +44,40 @@
                     </div>
                 </div>
                 <div class="span4">
-                    <dl class="dl-horizontal" ng-cloak>
-                        <dt>소유자</dt><dd>{{vm.project.owner}}</dd>
-                        <dt>프로젝트</dt><dd><strong><h4>{{vm.project.projectName}}</h4></strong></dd>
-                        <dt>멤버목록<span ng-if="vm.project.members">({{vm.project.members.length}})</span></dt>
-                        <dd ng-repeat="member in vm.project.members">{{member.name}} @@{{member.loginId}}</dd>
-                    </dl>
+                    <table class="table" ng-cloak>
+                        <tr>
+                            <td class="span2 td-title">소유자</td><td>{{vm.project.owner || '&nbsp;'}}</td>
+                        </tr>
+                        <tr>
+                            <td>프로젝트</td><td><strong>{{vm.project.projectName || '&nbsp;'}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>이슈</td><td><span>{{vm.project.issueCount || '&nbsp;'}}</span></td>
+                        </tr>
+                        <tr>
+                            <td>게시물</td><td><span>{{vm.project.boardCount || '&nbsp;'}}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="td-title">멤버목록<span ng-if="vm.project.members">({{vm.project.members.length}})</span></td>
+                            <td>
+                                <div ng-repeat="member in vm.project.members">{{member.name}} @@{{member.loginId}}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="span2">
+                    <div ng-repeat="repo in vm.targetProjects" ng-cloak>{{repo.full_name}}</div>
                 </div>
             </div>
+            <div>
+                <input type="text" name="code" value="@code" ng-model='vm.code' ng-init="vm.code='@code'">
+                <input type="text" name="code" value="@token" ng-model='vm.token' ng-init="vm.token='@token'">
+            </div>
+        </form>
+        <form class="form-horizontal" method="post" action="https://oss.navercorp.com/login/oauth/access_token">
+            <input type="text" name="client_id" value="bcb6c85038c14c0b8ade">
+            <input type="text" name="client_secret" value="e7a2b142550afe1d9262d2008afd2db331f4a0b2">
+            <input type="submit">
         </form>
     </div>
 }
