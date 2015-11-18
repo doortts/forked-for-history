@@ -9,8 +9,12 @@
                 <div class="controls">
                     <input type="text" id="projectName" placeholder="프로젝트 이름">
                     <button class="ybtn ybtn-info" ng-click="vm.redirect()" ng-if="!'@token'" ng-cloak>OSS 접근권한 받기</button>
-                    <button class="ybtn ybtn-info" ng-click="vm.getToken(vm.ownerName)" ng-if="'@token'" ng-cloak>조회</button>
-                    <button class="ybtn ybtn-info" ng-click="vm.postIssue()" ng-if="'@token'" ng-cloak>이슈입력</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.getDestinationProjects()" ng-if="'@token'" ng-cloak>조회</button>
+                    <span>from </span>
+                    <span>{{vm.source}}</span>
+                    <span>to </span>
+                    <span>{{vm.destination}}</span>
+                    <button class="ybtn ybtn-info" ng-click="vm.importIssues('test-org', 'a')" ng-if="'@token'" ng-cloak>import</button>
                 </div>
             </div>
             <div class="row">
@@ -28,11 +32,7 @@
                             <tbody>
                             @for((project, idx) <- projects.zipWithIndex) {
                                 <tr ng-click="vm.getProject('@project.owner', '@project.name')">
-                                    <td>
-                                        <label class="checkbox inline">
-                                            <input type="checkbox" id="inlineCheckbox1" value="@project.id">@{idx + 1}.
-                                        </label>
-                                    </td>
+                                    <td> @{idx + 1}.</td>
                                     <td>@if( idx != 0 && projects.get(idx-1).owner.equals(project.owner) ) {
                                     } else { @project.owner }</td>
                                     <td class="project-name"><a href="@routes.ProjectApp.project(project.owner, project.name)" target="_blank">@project.name</a></td>
@@ -65,19 +65,22 @@
                         </tr>
                     </table>
                 </div>
-                <div class="span2">
-                    <div ng-repeat="repo in vm.targetProjects" ng-cloak>{{repo.full_name}}</div>
+                <div class="span3">
+                        <input type="text" name="target-filter" ng-model="destination.full_name" placeholder="대상프로젝트 검색">
+                    <table class="table table-hover migration-list">
+                        <tbody>
+                            <tr ng-repeat="repo in vm.destinationProjects | filter:destination:strict">
+                                <td class="project-name" ng-click="vm.destination=repo.full_name">{{repo.full_name}} <span class="label label-important" ng-if="repo.private">p</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div ng-model="vm.importResult">result: {{vm.importResult}}</div>
                 </div>
             </div>
             <div>
-                <input type="text" name="code" value="@code" ng-model='vm.code' ng-init="vm.code='@code'">
-                <input type="text" name="code" value="@token" ng-model='vm.token' ng-init="vm.token='@token'">
+                <input type="hidden" name="code" value="@code" ng-model='vm.code' ng-init="vm.code='@code'">
+                <input type="hidden" name="code" value="@token" ng-model='vm.token' ng-init="vm.token='@token'">
             </div>
-        </form>
-        <form class="form-horizontal" method="post" action="https://oss.navercorp.com/login/oauth/access_token">
-            <input type="text" name="client_id" value="bcb6c85038c14c0b8ade">
-            <input type="text" name="client_secret" value="e7a2b142550afe1d9262d2008afd2db331f4a0b2">
-            <input type="submit">
         </form>
     </div>
 }

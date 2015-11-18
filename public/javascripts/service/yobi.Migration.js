@@ -20,7 +20,12 @@
  */
 (function(ns){
     angular.module('yobi.migration', [])
-        .constant('SERVER_NAME', "http://127.0.0.1:9000")
+        .constant("config", {
+            "YOBI_SERVER": "http://127.0.0.1:9000",
+            "GITHUB_API_BASE_URL": "https://oss.navercorp.com/api/v3",
+            "IMPORT_API_ACCEPT_HEADER": "application/vnd.github.golden-comet-preview+json",
+            "BOT_TOKEN": "34cf61c529904948472c7a8895d1a7c52c188d0a"
+        })
         .controller('MigrationController', MigrationController)
         .service('migrationService', migrationService)
         .config(['$httpProvider', function($httpProvider) {
@@ -28,91 +33,168 @@
             delete $httpProvider.defaults.headers.common['X-Requested-With'];
         }]);
 
-    function MigrationController($http, migrationService) {
+    ///////////////////////////////////////////////
+    //// controller
+    ///////////////////////////////////////////////
+    function MigrationController($http, $log, config, migrationService) {
         /* jshint validthis: true */
         var vm = this;
         vm.project = {};
-        vm.botToken = "f69f60b1a6cd2c3320bd3b19eb4052e528148f4f";
+        vm.destinationProjects = [];
+        vm.importResult = {};
+
         vm.getProject = getProject;
         vm.redirect = function () {
             window.location = "https://oss.navercorp.com/login/oauth/authorize?client_id=bcb6c85038c14c0b8ade&scope=user,repo,admin:org";
         };
-        vm.getToken = getToken;
-        vm.postIssue = postIssue;
+        vm.getDestinationProjects = getDestinationProjects;
+        vm.importIssues = importIssues;
+
 
         activate();
 
-        console.log('vm.code:', vm.code);
-
         ///////////////////////////
-        function getToken(name){
-            var BASE_URL = 'https://oss.navercorp.com/api/v3';
-            console.log("token: " , vm.token);
-            $http({
-                method: 'GET',
-                url: BASE_URL + '/search/repositories?q=+user:sw-chae',
-                "headers": {
-                    "Authorization": "token " + vm.token
-                }
-            }).then(function successCallback(response) {
-                console.log(response);
-                vm.targetProjects = response.data.items;
-            }, function errorCallback(response) {
-                console.log(response);
+        function getDestinationProjects(){
+            migrationService.getDestinationProjects().then(function(response){
+                vm.destinationProjects = response;
             });
         }
 
-        function postIssue(){
-            var BASE_API = 'https://oss.navercorp.com/api/v3';
-            var issue = {
-                title: "새로운 로고당 - " + Date.now(),
-                body: "이슈가 이상합니다",
-                labels: ["중요도 - 심각"],
-                assignee: "sw-chae"
-            };
-
-            $http({
-                method: 'POST',
-                url: BASE_API + '/repos/sw-chae/sample/issues',
-                "headers": {
-                    "Authorization": "token " + vm.botToken
-                },
-                data: JSON.stringify(issue)
-            }).then(function successCallback(response) {
-                console.log(response);
-            }, function errorCallback(response) {
-                console.log(response);
+        function importIssues(owner, projectName){
+            migrationService.importIssues(owner, projectName).then(function(result){
+                $log.info("result", result);
+                vm.importResult = result;
             });
         }
 
         function getProject(owner, projectName){
             migrationService.getProject(owner, projectName).then(function (data) {
                 vm.project = data;
+                vm.source = data.projectName;
                 return vm.project;
             });
         }
+
         function activate() {
             // ToDo: health check
         }
 
     }
 
-    function migrationService($http, SERVER_NAME) {
+    ///////////////////////////////////////////////
+    //// service
+    ///////////////////////////////////////////////
+
+    function migrationService($http, $log, config) {
+        var importResult = {
+            count: 0,
+            errorData: []
+        };
         return {
-            getProject: getProject
+            getProject: getProject,
+            getIssues: getIssues,
+            getDestinationProjects: getDestinationProjects,
+            importIssues: importIssues
         };
 
         //////////////////////////////
         function getProject(owner, projectName) {
             return $http({
                 method: 'GET',
-                url: SERVER_NAME + '/migration/' + owner + '/projects/' + projectName
+                url: config.YOBI_SERVER + '/migration/' + owner + '/projects/' + projectName
             }).then(function successCallback(response) {
-                console.log(response.data);
+                $log.log(response.data);
                 return response.data;
             }, function errorCallback(response) {
-                console.log('error');
+                $log.error('error');
             });
+        }
+
+        function getIssues(owner, projectName) {
+            return $http({
+                method: 'GET',
+                url: config.YOBI_SERVER  + '/migration/' + owner + '/projects/' + projectName + '/issues'
+            }).then(function successCallback(response) {
+                $log.info(response.data);
+                return response.data;
+            }, function errorCallback(response) {
+                $log.error(response);
+            });
+        }
+
+        function importIssues(owner, projectName){
+            var BASE_API = config.GITHUB_API_BASE_URL;
+            var fullRepoName = owner + '/' + projectName;
+
+            return $http({
+                method: 'GET',
+                url: "/migration/dlab/projects/yobi2ux/issues"
+            }).then(function success(response) {
+                $log.info("from", response);
+                response.data.forEach(function(data){
+                    data.issue.assignee = 'sw-chae';
+                    //data.issue.milestone = 1;
+                    if(!data.issue.body){
+                        $log.log("no contents!", data.issue);
+                        data.issue.body = '-- no contents --';
+                    }
+
+                    $http({
+                        method: 'POST',
+                        url: BASE_API + '/repos/' + fullRepoName + '/import/issues',
+                        "headers": {
+                            "Authorization": "token " + config.BOT_TOKEN,
+                            "Accept": "application/vnd.github.golden-comet-preview+json"
+                        },
+                        data: JSON.stringify(data)
+                    }).then(function success(response) {
+                        importResult.count++;
+                        if(response.status !== 202){
+                            importResult.errorData.push(response);
+                        }
+                        $log.debug("imported", response);
+                    }, function error(response) {
+                        importResult.errorData.push(response);
+                        $log.error("a", response);
+                    });
+                });
+                return importResult;
+            }, function error(response) {
+                $log.error("b", response);
+            });
+        }
+
+        function getDestinationProjects(){
+            var BASE_URL = config.GITHUB_API_BASE_URL;
+            var page = 1;
+            var perpage = 30;
+            var projects = [];
+            var MAX_PAGE_FOR_GATHERING = 10;
+
+            return gatheringLists();
+
+            /////////////////////////////////////
+            function gatheringLists(){
+                return $http({
+                    method: 'GET',
+                    url: BASE_URL + '/user/repos?per_page=' + perpage + '&page=' + page,
+                    "headers": {
+                        "Authorization": "token " + config.BOT_TOKEN
+                    }
+                }).then(success, error);
+            }
+            function success(response){
+                projects = projects.concat(response.data);
+                if(response.data.length === perpage){
+                    page++;
+                    if( page < MAX_PAGE_FOR_GATHERING ) return gatheringLists();
+                }
+                return projects;
+            }
+            function error(response){
+                $log.error("c", response);
+                throw response.status + " : " + response.data;
+            }
         }
     }
 })("yobi.Migration");

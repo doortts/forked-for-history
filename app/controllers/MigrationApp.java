@@ -32,15 +32,14 @@ import play.libs.ws.WSResponse;
 import play.mvc.Result;
 import views.html.migration.home;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
 
+import static play.libs.Json.toJson;
 import static play.mvc.Http.Context.Implicit.request;
 import static play.mvc.Results.ok;
 
@@ -67,40 +66,47 @@ public class MigrationApp {
             final String ACCESS_TOKEN_URL = "https://oss.navercorp.com/login/oauth/access_token";
 
             Promise<String> resultPromise = WS.url(ACCESS_TOKEN_URL)
-                .setContentType("application/x-www-form-urlencoded")
-                .post("client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + code)
-                .map( new F.Function<WSResponse, String>() {
-                    public String apply(WSResponse response) throws Throwable {
-                        play.Logger.debug(response.getBody());
-                        String accessToken = "";
-                        try {
-                            Pattern p = Pattern.compile("access_token=([^&]+)");
-                            Matcher m = p.matcher(response.getBody());
-                            if(m.find() ){
-                                accessToken = m.group(1);
+                    .setContentType("application/x-www-form-urlencoded")
+                    .setHeader("Accept", "application/json,application/x-www-form-urlencoded,text/html,*/*")
+                    .post("client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + code)
+                    .map( new F.Function<WSResponse, String>() {
+                        public String apply(WSResponse response) throws Throwable {
+                            play.Logger.debug(response.getBody());
+                            String accessToken = "";
+                            try {
+                                Pattern p = Pattern.compile("access_token=([^&]+)");
+                                Matcher m = p.matcher(response.getBody());
+                                if(m.find() ){
+                                    accessToken = m.group(1);
+                                }
+                            } catch (PatternSyntaxException ex) {
+                                play.Logger.error("Couldn't find access_token");
                             }
-                        } catch (PatternSyntaxException ex) {
-                            play.Logger.error("Couldn't find access_token");
+                            return accessToken;
                         }
-                        return accessToken;
-                    }
-                });
+                    });
             return resultPromise.map(new F.Function<String, Result>() {
                 public Result apply(String token) {
-                    return ok(home.render("Migration",
-                            targetProjects.stream().sorted((p1, p2) -> p1.owner.compareTo(p2.owner)).collect(Collectors.toList()), code, token));
+                    return ok(home.render("Migration", sortProjectsByOwnerAndName(targetProjects), code, token));
                 }
             });
         } else {
             return Promise.promise(new F.Function0<Result>() {
                 @Override
                 public Result apply() throws Throwable {
-                    return ok(home.render("Migration",
-                            targetProjects.stream().sorted((p1, p2) -> p1.owner.compareTo(p2.owner)).collect(Collectors.toList()), code, null));
+                    return ok(home.render("Migration", sortProjectsByOwnerAndName(targetProjects), null, null));
                 }
             });
         }
 
+    }
+
+    private static List<Project> sortProjectsByOwnerAndName(Set<Project> targetProjects) {
+        Comparator<Project> comparator = Comparator.comparing(project -> project.owner);
+        comparator = comparator.thenComparing(Comparator.comparing(project -> project.name));
+        List<Project> list = new ArrayList<>(targetProjects);
+        Collections.sort(list, comparator);
+        return list;
     }
 
     public static Result project(String owner, String projectName){
@@ -115,9 +121,31 @@ public class MigrationApp {
             member.put("loginId", projectUser.user.loginId);
             members.add(member);
         }
-        result.put("members", Json.toJson(members.toArray()));
+        result.put("members", toJson(members.toArray()));
         result.put("issueCount", Issue.countIssuesBy(project.id, new SearchCondition()));
         result.put("boardCount", Posting.countPostings(project));
         return ok(result);
+    }
+
+    public static Result exportIssues(String owner, String projectName){
+        Project project = Project.findByOwnerAndProjectName(owner, projectName);
+
+        List<ObjectNode> issues = new ArrayList<>();
+        for (Issue issue : project.issues) {
+            ObjectNode json = Json.newObject();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+            ObjectNode node = Json.newObject();
+            node.put("title", issue.title);
+            node.put("body", issue.body);
+            node.put("created_at", df.format(issue.createdDate));
+            Optional.ofNullable(issue.assignee).ifPresent(assignee -> node.put("assignee", assignee.user.loginId));
+            Optional.ofNullable(issue.milestone).ifPresent(milestone -> node.put("milestone", milestone.title));
+            node.put("closed", issue.isClosed());
+            json.put("issue", node);
+            issues.add(json);
+        }
+
+        return ok(toJson(issues));
     }
 }
