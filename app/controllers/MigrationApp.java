@@ -48,6 +48,7 @@ import static play.mvc.Results.ok;
 public class MigrationApp {
 
     public static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static final String YOBI_SERVER = "http://yobi.navercorp.com/";
 
     @AnonymousCheck(requiresLogin = true, displaysFlashMessage = true)
     public static Promise<Result> migration() {
@@ -131,27 +132,94 @@ public class MigrationApp {
         return ok(result);
     }
 
+    public static Result exportLabels(String owner, String projectName){
+        Project project = Project.findByOwnerAndProjectName(owner, projectName);
+
+        List<ObjectNode> labels = new ArrayList<>();
+        for (IssueLabel label : project.issueLabels) {
+            ObjectNode node = Json.newObject();
+            node.put("id", label.id);
+            node.put("name", label.name);
+            node.put("categoryId", label.category.id);
+            node.put("categoryName", label.category.name);
+            labels.add(node);
+        }
+
+        ObjectNode exportData = Json.newObject();
+        exportData.put("labels", toJson(labels));
+
+        return ok(exportData);
+    }
+
+    public static Result exportMilestones(String owner, String projectName){
+        Project project = Project.findByOwnerAndProjectName(owner, projectName);
+
+        List<ObjectNode> milestones = project.milestones.stream()
+                .map(MigrationApp::composeMilestoneJson).collect(Collectors.toList());
+
+        ObjectNode exportData = Json.newObject();
+        exportData.put("milestones", toJson(milestones));
+
+        return ok(exportData);
+    }
+
     public static Result exportIssues(String owner, String projectName){
         Project project = Project.findByOwnerAndProjectName(owner, projectName);
 
         List<ObjectNode> issues = project.issues.stream()
-                .map(MigrationApp::composeIssueJson)
-                .collect(Collectors.toList());
+                .map((issue) -> MigrationApp.composeIssueJson(issue)).collect(Collectors.toList());
 
-        return ok(toJson(issues));
+        ObjectNode exportData = Json.newObject();
+        exportData.put("issues", toJson(issues));
+
+        return ok(exportData);
+    }
+
+    private static ObjectNode composeMilestoneJson(Milestone m) {
+        ObjectNode node = Json.newObject();
+        node.put("id", m.id);
+        node.put("title", m.title);
+        node.put("state", m.state.state());
+        node.put("description", m.contents);
+        Optional.ofNullable(m.dueDate).ifPresent(dueDate -> node.put("due_on", DF.format(m.dueDate)));
+
+        ObjectNode milestoneJson = Json.newObject();
+        milestoneJson.put("milestone", node);
+        return milestoneJson;
+    }
+
+    private static String addOriginalAuthorName(String text, String authorLoginId, String authorName, String type, String link){
+        return "`@" + authorLoginId + " (" + authorName + ") 님이 작성한 '" + type + "'입니다.` [[link]]("
+        + link + ") \n\n" + text;
     }
 
     private static ObjectNode composeIssueJson(Issue issue) {
-        ObjectNode issueJson = Json.newObject();
         ObjectNode node = Json.newObject();
+
+        String orgLink = YOBI_SERVER + issue.project.owner + "/" + issue.project.name + "/issue/" + issue.getNumber();
         node.put("title", issue.title);
-        node.put("body", issue.body);
-        Optional.ofNullable(issue.body).ifPresent(body -> node.put("body", body));
+        Optional.ofNullable(issue.body).ifPresent(body -> node.put("body",
+                addOriginalAuthorName(body, issue.authorLoginId, issue.authorName, "이슈", orgLink)));
         node.put("created_at", DF.format(issue.createdDate));
         Optional.ofNullable(issue.assignee).ifPresent(assignee -> node.put("assignee", assignee.user.loginId));
         Optional.ofNullable(issue.milestone).ifPresent(milestone -> node.put("milestone", milestone.title));
+        Optional.ofNullable(issue.milestone).ifPresent(milestone -> node.put("milestoneId", milestone.id));
         node.put("closed", issue.isClosed());
+
+//        List<String> labels = issue.labels.stream().map(label -> label.category.name + " - " + label.name).collect(Collectors.toList());
+//        node.put("labels", toJson(labels));
+
+        ObjectNode issueJson = Json.newObject();
+        List<ObjectNode> comments = new ArrayList<>();
+        for (IssueComment comment : issue.comments) {
+            ObjectNode commentNode = Json.newObject();
+            commentNode.put("created_at", DF.format(comment.createdDate));
+            commentNode.put("body",
+                    addOriginalAuthorName(comment.contents, comment.authorLoginId, comment.authorName, "코멘트", orgLink + "#comment-" + comment.id));
+            comments.add(commentNode);
+        }
         issueJson.put("issue", node);
+        issueJson.put("comments", toJson(comments));
         return issueJson;
     }
 }

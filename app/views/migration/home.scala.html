@@ -14,7 +14,9 @@
                     <span>{{vm.source}}</span>
                     <span>to </span>
                     <span>{{vm.destination}}</span>
-                    <button class="ybtn ybtn-info" ng-click="vm.importIssues('test-org', 'a')" ng-if="'@token'" ng-cloak>import</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.importMilestones('test-org', 'a')" ng-if="'@token'" ng-cloak>import milestone</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.importIssues('test-org', 'a')" ng-if="'@token'" ng-cloak>import issue</button>
+                    <button class="ybtn ybtn-info" ng-click="vm.importIssues('test-org', 'a')" ng-if="'@token'" ng-cloak>import board</button>
                 </div>
             </div>
             <div class="row">

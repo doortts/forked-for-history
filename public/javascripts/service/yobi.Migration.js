@@ -49,6 +49,7 @@
         };
         vm.getDestinationProjects = getDestinationProjects;
         vm.importIssues = importIssues;
+        vm.importMilestones = importMilestones;
 
 
         activate();
@@ -62,6 +63,13 @@
 
         function importIssues(owner, projectName){
             migrationService.importIssues(owner, projectName).then(function(result){
+                $log.info("result", result);
+                vm.importResult = result;
+            });
+        }
+
+        function importMilestones(owner, projectName){
+            migrationService.importMilestones(owner, projectName).then(function(result){
                 $log.info("result", result);
                 vm.importResult = result;
             });
@@ -86,6 +94,7 @@
     ///////////////////////////////////////////////
 
     function migrationService($http, $log, config) {
+        var milestoneMapper = {};
         var importResult = {
             count: 0,
             errorData: []
@@ -94,6 +103,7 @@
             getProject: getProject,
             getIssues: getIssues,
             getDestinationProjects: getDestinationProjects,
+            importMilestones: importMilestones,
             importIssues: importIssues
         };
 
@@ -122,6 +132,45 @@
             });
         }
 
+        function importMilestones(owner, projectName){
+            var BASE_API = config.GITHUB_API_BASE_URL;
+            var fullRepoName = owner + '/' + projectName;
+
+            return $http({
+                method: 'GET',
+                url: "/migration/dlab/projects/yobi2ux/milestones"
+            }).then(function success(response) {
+                $log.info("from", response);
+                response.data.milestones.forEach(function(data){
+                    $http({
+                        method: 'POST',
+                        url: BASE_API + '/repos/' + fullRepoName + '/milestones',
+                        "headers": {
+                            "Authorization": "token " + config.BOT_TOKEN
+                        },
+                        data: JSON.stringify(data.milestone)
+                    }).then(function success(response) {
+                        if(response.status !== 201){
+                            importResult.errorData.push(response);
+                        }
+                        $log.debug("imported milestone", response);
+
+                        if(!milestoneMapper[projectName]) milestoneMapper[projectName] = {};
+                        milestoneMapper[projectName][data.milestone.id] = response.data.number;
+                        $log.debug(data.milestone.id, ":", response.data.number);
+                    }, function error(response) {
+                        var orgData = JSON.parse(response.config.data);
+                        importResult.errorData.push(orgData);
+                        importResult.errorData.push(response.data.errors[0]);
+                        $log.error("m", response);
+                    });
+                });
+                return importResult;
+            }, function err(respnse) {
+
+            });
+        }
+
         function importIssues(owner, projectName){
             var BASE_API = config.GITHUB_API_BASE_URL;
             var fullRepoName = owner + '/' + projectName;
@@ -131,8 +180,10 @@
                 url: "/migration/dlab/projects/yobi2ux/issues"
             }).then(function success(response) {
                 $log.info("from", response);
-                response.data.forEach(function(data){
-                    mappingForImport(data);
+
+                $log.log("milestoneMapper", milestoneMapper);
+                response.data.issues.forEach(function(data){
+                    mappingForImport(data, projectName);
 
                     $http({
                         method: 'POST',
@@ -158,10 +209,18 @@
                 $log.error("b", response);
             });
 
-            function mappingForImport(data){
+            function mappingForImport(data, projectName){
                 // issue
+                // assignee mapping
                 data.issue.assignee = 'sw-chae';
-                //data.issue.milestone = 1;
+
+                // milestone mapping
+                if("milestoneId" in data.issue){
+                    data.issue.milestone = milestoneMapper[projectName][data.issue.milestoneId];
+                    delete data.issue.milestoneId;
+                }
+
+                // treat no contents issue
                 if("body" in data.issue && !data.issue.body){
                     var NO_CONTENTS = "-- no contents --";
                     $log.log(NO_CONTENTS);
