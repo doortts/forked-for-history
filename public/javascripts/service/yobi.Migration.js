@@ -132,12 +132,7 @@
             }).then(function success(response) {
                 $log.info("from", response);
                 response.data.forEach(function(data){
-                    data.issue.assignee = 'sw-chae';
-                    //data.issue.milestone = 1;
-                    if(!data.issue.body){
-                        $log.log("no contents!", data.issue);
-                        data.issue.body = '-- no contents --';
-                    }
+                    mappingForImport(data);
 
                     $http({
                         method: 'POST',
@@ -162,6 +157,17 @@
             }, function error(response) {
                 $log.error("b", response);
             });
+
+            function mappingForImport(data){
+                // issue
+                data.issue.assignee = 'sw-chae';
+                //data.issue.milestone = 1;
+                if("body" in data.issue && !data.issue.body){
+                    var NO_CONTENTS = "-- no contents --";
+                    $log.log(NO_CONTENTS);
+                    data.issue.body = NO_CONTENTS;
+                }
+            }
         }
 
         function getDestinationProjects(){

@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 import static play.libs.Json.toJson;
 import static play.mvc.Http.Context.Implicit.request;
@@ -45,6 +46,9 @@ import static play.mvc.Results.ok;
 
 @AnonymousCheck
 public class MigrationApp {
+
+    public static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
     @AnonymousCheck(requiresLogin = true, displaysFlashMessage = true)
     public static Promise<Result> migration() {
         Set<Project> targetProjects = new HashSet<>();
@@ -130,22 +134,24 @@ public class MigrationApp {
     public static Result exportIssues(String owner, String projectName){
         Project project = Project.findByOwnerAndProjectName(owner, projectName);
 
-        List<ObjectNode> issues = new ArrayList<>();
-        for (Issue issue : project.issues) {
-            ObjectNode json = Json.newObject();
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-            ObjectNode node = Json.newObject();
-            node.put("title", issue.title);
-            node.put("body", issue.body);
-            node.put("created_at", df.format(issue.createdDate));
-            Optional.ofNullable(issue.assignee).ifPresent(assignee -> node.put("assignee", assignee.user.loginId));
-            Optional.ofNullable(issue.milestone).ifPresent(milestone -> node.put("milestone", milestone.title));
-            node.put("closed", issue.isClosed());
-            json.put("issue", node);
-            issues.add(json);
-        }
+        List<ObjectNode> issues = project.issues.stream()
+                .map(MigrationApp::composeIssueJson)
+                .collect(Collectors.toList());
 
         return ok(toJson(issues));
+    }
+
+    private static ObjectNode composeIssueJson(Issue issue) {
+        ObjectNode issueJson = Json.newObject();
+        ObjectNode node = Json.newObject();
+        node.put("title", issue.title);
+        node.put("body", issue.body);
+        Optional.ofNullable(issue.body).ifPresent(body -> node.put("body", body));
+        node.put("created_at", DF.format(issue.createdDate));
+        Optional.ofNullable(issue.assignee).ifPresent(assignee -> node.put("assignee", assignee.user.loginId));
+        Optional.ofNullable(issue.milestone).ifPresent(milestone -> node.put("milestone", milestone.title));
+        node.put("closed", issue.isClosed());
+        issueJson.put("issue", node);
+        return issueJson;
     }
 }
