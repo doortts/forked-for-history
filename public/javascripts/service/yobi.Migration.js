@@ -57,8 +57,7 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     vm.source = {};             // source project
     vm.destination = {};        // destination project
     vm.hardCodedDestination = {
-        owner: 'test-org',
-        projectName: 'b'
+        owner: 'test-org'
     };
     vm.projectLabels = {};
     vm.rawIssueLabelMap = {};
@@ -91,6 +90,7 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     vm._test_ = {};
     vm._test_.flatLabelMap = flatLabelMap;
 
+    var testNotiMsg = "'테스트 기간 중에는 Destination을 test-org 그룹 하위의 프로젝트로만 지정 가능합니다!'";
     activate();
 
     ///////////////////////////
@@ -150,6 +150,12 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     }
 
     function importPosts() {
+        if(vm.destination.owner !== vm.hardCodedDestination.owner){
+            vm.importBtnDisabled = false;
+            alert(testNotiMsg);
+            throw "Error - wrong destination project selected"
+        }
+
         if(!lastConfirm("게시글", vm.destination)) return;
 
         vm.importBtnDisabled = true;
@@ -160,11 +166,6 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
 
         assertIsProjectSelected('Source', source);
         assertIsProjectSelected('Destination', destination);
-
-        $log.log("origin", destination, " changes to ", vm.hardCodedDestination);
-
-        destination.projectName = vm.hardCodedDestination.projectName;
-        destination.owner = vm.hardCodedDestination.owner;
 
         loadingBar.start();
         systemMessage("서버로부터 게시글을 읽어들입니다...");
@@ -183,6 +184,14 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
             systemMessage("source 프로젝트를 선택하세요!");
             return;
         }
+
+        // for test
+        if(vm.destination.owner !== vm.hardCodedDestination.owner){
+            vm.importBtnDisabled = false;
+            alert(testNotiMsg);
+            throw "Error - wrong destination project selected"
+        }
+
         if(!lastConfirm('이슈', vm.destination)) return;
         vm.importBtnDisabled = true;
         importProjectLabels(source);
@@ -293,10 +302,6 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
         assertIsProjectSelected('Source', source);
         assertIsProjectSelected('Destination', destination);
 
-        $log.log("origin", destination, " changes to ", vm.hardCodedDestination);
-        destination.projectName = vm.hardCodedDestination.projectName;
-        destination.owner = vm.hardCodedDestination.owner;
-
         systemMessage("서버로부터 이슈를 읽어들입니다...");
         migrationService.importIssues(source, destination, issueLabelMap).then(function (result) {
             $log.info("result", result);
@@ -337,6 +342,13 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     }
 
     function importMilestones() {
+        // forced destination project for test
+        if(vm.destination.owner !== vm.hardCodedDestination.owner){
+            vm.importBtnDisabled = false;
+            alert(testNotiMsg);
+            throw "Error - wrong destination project selected"
+        }
+
         if(!lastConfirm('마일스톤', vm.destination)) return;
 
         vm.importBtnDisabled = true;
@@ -347,10 +359,6 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
         assertIsProjectSelected('Destination', vm.destination);
 
         systemMessage("마일스톤을 복사합니다..");
-        // forced destination project for test
-        vm.destination.projectName = vm.hardCodedDestination.projectName;
-        vm.destination.owner = vm.hardCodedDestination.owner;
-        $log.log("origin", vm.destination, " changes to ", vm.hardCodedDestination);
 
         migrationService.importMilestones(vm.source, vm.destination).then(function (result) {
             $log.info("result", result);

@@ -94,8 +94,9 @@
                                     <div class="text-align-left caution" ng-if="vm.destination.projectName">
                                         기존 게시글은 '게시글'라벨을 붙여 이슈로 옮겨집니다.
                                     </div>
+                                    <div class="text-align-left caution" ng-if="vm.showMoreDesc">(만약 먼저 마이그레이션 작업을 진행한 이슈의 개수가 많을 경우 대상 프로젝트에 게시글이 보이는 시점까지는 상당한 시간이 소요될 수 있습니다. 진행바가 정상적으로 완료되었으면 차분히 기다려 주세요.)</div>
                                     <import-warning type="게시글" data="vm.destination.posts"></import-Warning>
-                                    <div class="btn-group"><button class="btn btn-danger" ng-click="vm.importPosts()" ng-if="vm.destination.projectName" ng-disabled="!vm.source.postCount || vm.importBtnDisabled" ng-cloak>
+                                    <div class="btn-group"><button class="btn btn-danger" ng-click="vm.showMoreDesc=!vm.showMoreDesc;vm.importPosts()" ng-if="vm.destination.projectName" ng-disabled="!vm.source.postCount || vm.importBtnDisabled" ng-cloak>
                                         게시글 옮기기</button></div>
                                 </td>
                             </tr>
