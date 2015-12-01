@@ -155,10 +155,10 @@ public class MigrationApp {
         Project project = Project.findByOwnerAndProjectName(owner, projectName);
 
         Query<IssueLabelAggregate> query = Ebean.find(IssueLabelAggregate.class);
-        String sql = "select ISSUE_ID, ISSUE_LABEL_ID \n" +
-                "from ISSUE i, ISSUE_ISSUE_LABEL iil \n" +
-                "where PROJECT_ID = " + project.id + "\n" +
-                "and i.ID = iil.ISSUE_ID";
+        String sql = "select issue_id, issue_label_id \n" +
+                "from issue i, issue_issue_label iil \n" +
+                "where project_id = " + project.id + "\n" +
+                "and i.id = iil.issue_id";
         RawSql rawSql = RawSqlBuilder.parse(sql).create();
         query.setRawSql(rawSql);
         List<IssueLabelAggregate> results = query.findList();
