@@ -28,6 +28,7 @@ import javax.persistence.Entity;
 @Entity
 @Sql
 public class IssueLabelAggregate extends Model {
+    private static final long serialVersionUID = -8843323869004757091L;
     public Long issueId;
     public Long issueLabelId;
 }
