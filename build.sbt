@@ -8,6 +8,7 @@ version := "0.8.2+perf"
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
   javaCore,
+  javaWs,
   javaJdbc,
   javaEbean,
   cache,
