@@ -19,7 +19,8 @@ angular.module("yobi.migration")
         "GITHUB_API_BASE_URL": "https://oss.navercorp.com/api/v3",
         "IMPORT_API_ACCEPT_HEADER": "application/vnd.github.golden-comet-preview+json",
         "BOT_TOKEN": "34cf61c529904948472c7a8895d1a7c52c188d0a",
-        "CLIENT_ID": "bcb6c85038c14c0b8ade"
+        "CLIENT_ID": "bcb6c85038c14c0b8ade",
+        "DEFAULT_WORKER": "oss-bot"
     })
     .value("USER", {
         TOKEN: ""
@@ -66,6 +67,9 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     vm.systemMessages = [];
     vm.selectedSourceName = "";
     vm.selectedDestinationName = "";
+    vm.CONFIG = CONFIG;
+    vm.showWorkerWarning = false;   // not ready for worker at destination
+    vm.showUserProjectWarning = false;   // show destination project isn't organization project
 
     var prevOwnerName = "";
     var loadingBar = {};
@@ -127,6 +131,27 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
             var systemMsgDisplay = $("#system-msg");
             systemMsgDisplay.scrollTop(systemMsgDisplay[0].scrollHeight);
         }, 500);
+    }
+
+    function isMigrationWorkerAdmin(destination){
+        vm.showWorkerWarning = false;   // not ready for worker at destination
+        vm.showUserProjectWarning = false;   // show destination project isn't organization project
+        if(destination.ownerType === "User"){
+            vm.showUserProjectWarning = true;
+            return;
+        } else {
+            vm.showUserProjectWarning = false;
+        }
+        migrationService.isOrgAdmin(destination, CONFIG.DEFAULT_WORKER).then(
+            function(response) {
+                if(destination.ownerType === 'Organization'
+                    && response.data.role !== 'admin'){
+                    WORKER.TOKEN = USER.TOKEN;
+                    vm.showWorkerWarning = true;
+                } else {
+                    vm.showWorkerWarning = false;
+                }
+            });
     }
 
     function userExistAtDestinationProject(destination, sourceUser, destUser){
@@ -266,6 +291,7 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
         vm.destination = {
             owner: repo.owner.login,
             projectName: repo.name,
+            full_name: repo.owner.login + "/" +  repo.name,
             ownerType: repo.owner.type
         };
 
@@ -278,6 +304,7 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
             WORKER.TOKEN = "";
         }
 
+        isMigrationWorkerAdmin(vm.destination);
         checkIfDestinationHaveDataAlready();
     }
 
@@ -480,7 +507,8 @@ function migrationService($http, $log, CONFIG, USER, WORKER) {
         getSourceProjects: getSourceProjects,
         haveMilestonesAlready: haveMilestonesAlready,
         haveIssuesAlready: haveIssuesAlready,
-        havePostsAlready: havePostsAlready
+        havePostsAlready: havePostsAlready,
+        isOrgAdmin: isOrgAdmin
     };
 
     // for testing
@@ -551,6 +579,15 @@ function migrationService($http, $log, CONFIG, USER, WORKER) {
         });
     }
 
+    function isOrgAdmin(destination, login){
+        return $http({
+            method: 'GET',
+            url: CONFIG.GITHUB_API_BASE_URL + '/orgs/' + destination.owner + '/memberships/' + login,
+            headers: {
+                "Authorization": "token " + WORKER.TOKEN
+            }
+        }).then(success, errorWithSilence);
+    }
     function userExistAtDestinationProject(owner, projectName, loginid){
         return $http({
             method: 'GET',
