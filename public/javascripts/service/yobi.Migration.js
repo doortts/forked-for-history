@@ -18,7 +18,8 @@ angular.module("yobi.migration")
         "YOBI_SERVER": "http://127.0.0.1:9000",
         "GITHUB_API_BASE_URL": "https://oss.navercorp.com/api/v3",
         "IMPORT_API_ACCEPT_HEADER": "application/vnd.github.golden-comet-preview+json",
-        "BOT_TOKEN": "34cf61c529904948472c7a8895d1a7c52c188d0a"
+        "BOT_TOKEN": "34cf61c529904948472c7a8895d1a7c52c188d0a",
+        "CLIENT_ID": "bcb6c85038c14c0b8ade"
     })
     .value("USER", {
         TOKEN: ""
@@ -71,7 +72,8 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
     var filterTextTimeout;
 
     vm.redirect = function () {
-        window.location = "https://oss.navercorp.com/login/oauth/authorize?client_id=bcb6c85038c14c0b8ade&scope=user,repo,admin:org";
+        window.location = "https://oss.navercorp.com/login/oauth/authorize?client_id=" + CONFIG.CLIENT_ID
+            + "&scope=user,repo,admin:org";
     };
     vm.getSourceProject = getProject;
     vm.getSourceProjects = getSourceProjects;
@@ -114,6 +116,9 @@ function MigrationController($log, $timeout, migrationService, USER, WORKER, CON
 
     function setUserToken(token){
         USER.TOKEN = token;
+        if(!token || token.trim().length < 2){
+            vm.redirect();
+        }
     }
 
     function systemMessage(text){

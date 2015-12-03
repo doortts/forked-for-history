@@ -3,13 +3,11 @@
 
 @migrationPageLayout(utils.Config.getSiteName)("") {
     <div ng-app="yobi.migration" ng-controller="MigrationController as vm" class="yobi-migration" ng-init="vm.setUserToken('@token')">
-        <div class="header-pannel">
+        <div class="header-pannel" ng-if="'@token'">
             <div class="comeback-text pull-right">Yobi to OSS<span class="midium-font"></span></div>
             <div class="row title-text-bg">
                 <div id="system-msg" class="well board" ng-cloak>
-                    <div ng-if="!'@token'">
-                        OSS접근 권한을 받으세요 <i class="yobicon-right"></i> <button class="ybtn ybtn-danger" ng-click="vm.redirect()" ng-if="!'@token'" ng-cloak>
-                        OSS 접근권한 받기</button></div><div class="messages" ng-repeat="msg in vm.systemMessages track by $index">
+                    <div class="messages" ng-repeat="msg in vm.systemMessages track by $index">
                     {{::msg}}</div>
                     <div class="error-data" ng-if="vm.importResult.errorData.length > 0">{{vm.importResult.errorData}}</div>
                 </div>
